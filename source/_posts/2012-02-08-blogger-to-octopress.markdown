@@ -3,7 +3,7 @@ layout: post
 title: "Moving from Blogger to Octopress"
 date: 2012-02-08 18:25
 comments: true
-published: false
+published: true
 categories: 
 ---
 
