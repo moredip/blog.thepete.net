@@ -1,0 +1,39 @@
+---
+layout: post
+title: "an inverted include? for ruby"
+date: 2010-01-31T18:13:00-08:00
+comments: false
+categories:
+ - ruby
+---
+
+<div class='post'>
+<p>I've always found it a slightly hard to read ruby which uses Enumerable#include?(), especially when the Enumerable your testing against is a literal or a constant. For example, let's say you're checking an input parameter to guard against invalid input. You might write something like:</p>
+
+<pre class="brush: ruby; gutter: false">
+unless VALID_COMMANDS.include?( command_param )
+  whine_to_user()
+  return
+end
+</pre>
+
+<p>This makes sense, but it seems backwards to me. I don't care whether some array has a value in it so much as I care whether a value is in some array. Obviously that's just two ways of saying the same thing, but the latter seems to capture the intent much more to me. I think it would be easier to understand this:</p>
+
+<pre class="brush: ruby; gutter: false">
+unless command_param.in?( VALID_COMMANDS )
+  whine_to_user()
+  return
+end
+</pre>
+
+<p>This evening it (finally) dawned on me that this would be ridiculously trivial to implement:</p>
+
+<pre class="brush: ruby; gutter: false">
+class Object
+  def in?( enumerable )
+    enumerable.include?(self)
+  end
+end
+</pre>
+
+<p>In fact, this was such a trivial fix that I'm now left wondering (a) whether this is already in ActiveSupport or Facets or whatever and I just haven't found it yet and (b) whether there's some huge flaw in this that I'm not spotting...</p></div>

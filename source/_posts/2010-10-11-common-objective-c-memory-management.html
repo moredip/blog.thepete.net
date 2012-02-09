@@ -1,0 +1,167 @@
+---
+layout: post
+title: "Common Objective-C memory management errors, Part I"
+date: 2010-10-11T22:08:00-07:00
+comments: false
+---
+
+<div class='post'>
+I would say that the steepest learning curve for someone new to iOS development is having to manage your own memory using reference counting. Knowing when to retain and when to autorelease can seem like a black art until you understand the conventions which is used (extremely consistently, I might add) within Objective C libraries. Let's examine one very common mistake, which I will call the Property Assignment Memory Leak. I've seen this a few times, and indeed committed this error myself during my first weeks of iOS development.<br />
+<br />
+<h2>The code</h2><br />
+Imagine we have a simple Duck class, which holds a feathers array:<br />
+<br />
+<br />
+<pre class="brush: c; gutter: false">@interface Duck : NSObject {
+  NSArray *_feathers;
+}
+@property (nonatomic,retain) NSArray *feathers;
+@end
+
+@implementation Duck
+@synthesize feathers=_feathers;
+@end
+</pre><br />
+during construction we'd like to initialize this array, so we create an init method as follows:<br />
+<pre class="brush: c; gutter: false">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    self.feathers = [[NSArray alloc] init];
+  }
+  return self;
+}
+</pre>Of course, we need to make sure we release our ownership of the feather array during deallocation, so we'll add a dealloc method like so:<br />
+<pre class="brush: c; gutter: false">- (void)dealloc {
+  self.feathers = nil;
+}
+</pre><br />
+<h2>The Leak</h2>So we're good here, right? The observant reader will note that no, we're not. the feathers array which we created in our init method will never be released. This will be a little easier to explain if I refactor the init method a little, making it more verbose by introducing a local variable to hold the array we are about to assign to the self.feathers property:<br />
+<br />
+<pre class="brush: c;">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    // alloc will always create an object with a retain count already set to 1. In other 
+    // words, tempArray has ownership of the object.
+    NSArray *tempArray = [[NSArray alloc] init]; 
+
+    // assigning to self.feathers bumps the array's retain count up to 2. In other words, 
+    // now the feathers property also has ownership of the object.
+    self.feathers = tempArray; 
+  }
+
+  // when we return tempArray goes out of scope without ever releasing ownership of the object it created. Memory leak!
+  return self;
+}
+</pre><br />
+To make this clearer, I'll try and illustrate what happens as we move through the Duck object's lifecycle.<br />
+<br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://1.bp.blogspot.com/_rzQrByr0AIg/TLPif9vTCHI/AAAAAAAAFYU/pvo2veXZj3A/s1600/ObjCMemLeak_1.png" /><p>1) Here an instance of Duck has just been alloced, and we're about to execute init.</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://3.bp.blogspot.com/_rzQrByr0AIg/TLPigBadwKI/AAAAAAAAFYY/5p1A35EcqCc/s1600/ObjCMemLeak_2.png"" /><p>2) We create an array, and assign it to the local tempArray variable. Note that any objects created with alloc will already have a retain count of +1 when alloc returns.<br />
+</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://1.bp.blogspot.com/_rzQrByr0AIg/TLPigjIqkoI/AAAAAAAAFYc/v-Bk6DZGXWk/s1600/ObjCMemLeak_3.png" /><p>3) We assign the array to the feathers property. Because the property has retain semantics it will take ownership of the array, incrementing its retain count to +2.<br />
+</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://1.bp.blogspot.com/_rzQrByr0AIg/TLPig2tUvnI/AAAAAAAAFYg/ng4R-7FVNNI/s1600/ObjCMemLeak_4.png" /><p>4) We've now left the init method, and so the local tempArray variable has gone out of scope. However, it never released ownership of the array before it went out of scope, so the retain count is still +2.</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://3.bp.blogspot.com/_rzQrByr0AIg/TLPihCflJXI/AAAAAAAAFYk/nq0UTQa8Yzc/s1600/ObjCMemLeak_5.png" /><p>5) After using our Duck instance for some time it is eventually deallocated, at which point its dealloc method is called. We do the right thing and set its feather property to nil during dealloc. Again, the feather property has retain semantics and therefore it will release ownership of whatever it is currently pointing to just before taking ownership of whatever it is being asked to point to. It was pointing to our array, and is now pointing to nil, so it releases ownership of the array (dropping its retain count down to +1), and takes ownership of nil (which has no effect whatsoever).<br />
+</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://2.bp.blogspot.com/_rzQrByr0AIg/TLPihq5UurI/AAAAAAAAFYo/W60lonuAKBI/s1600/ObjCMemLeak_6.png" /><p>6) Finally, our Duck instance is fully deallocated, and disappears. But our array instance still has a retain count of +1, even thought nothing is referencing it. Memory leak! <br />
+</p></div><br />
+<br />
+<p>While I showed the entire lifecycle for a Duck instance here I should note that the bug is in the init method, and once that method returns the damage has been done. The fact that after init returns the array instance only has 1 reference pointing to it but has a retain count of 2 is indicative of that. I wanted to show the entire lifecycle to demonstrate that the point at which a memory leak is introduced will likely be quite far away from the point where the leak is detected. This is important to know when using Instruments or some other tool to try and detect leaks at runtime.<br />
+</p><p>I think that the most common cause of this particular memory leak bug is an unclear understanding of how properties work. It is hard at first glance to see how assigning an object pointer to self.foo is different than assigning that pointer to a local variable. Once you grok that that property assignment also assigns ownership, and that you already have an implied ownership by the act of calling alloc then things start to fall into place. At least, that's what happened for me.<br />
+<br />
+<h2>What should we have done?</h2><br />
+We have a range of options for <em>correctly</em> implementing our init method:<br />
+<br />
+<h3>Use autorelease</h3><pre class="brush: c; gutter: false">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    self.feathers = [[[NSArray alloc] init] autorelease];
+  }
+  return self;
+}
+</pre><br />
+<h3>Explicitly release ownership after assignment</h3><pre class="brush: c; gutter: false">- (id) init
+{
+self = [super init];
+  if (self != nil) {
+    NSArray *tempArray = [[NSArray alloc] init]; 
+    self.feathers = tempArray;
+    [tempArray release];
+  }
+  return self;
+}
+</pre><br />
+<h3>Create an array without implicitly taking ownership</h3><pre class="brush: c; gutter: false">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    self.feathers = [NSArray array];
+  }
+  return self;
+}
+</pre><br />
+<p>The first two approaches are the most common. I often see advice to use the more verbose explicit release approach, rather than autorelease, because it is more performant. Personally, I tend to optimize for developer performance at the sake of a bit of CPU performance, and prefer the autorelease approach. It's a lot less typing and more importantly I feel it makes the code a bit easier to scan through, particularly if you have a block of code with lots of property assignments.<br />
+</p><br />
+<h2>UPDATE</h2>After posting this I remembered there's another way we could solve this memory leak:<br />
+<h3>Assign directly to the member variable</h3><pre class="brush: c; gutter: false">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    _feathers = [[NSArray alloc] init];
+  }
+  return self;
+}
+</pre><br />
+<p>I don't really like this approach, because there's a lack of symmetry in sometimes accessing a member variable directly, but at other times via a property. Also, it encourages folk to use this approach outside of init methods. This greatly increases the likelihood of <em>another</em> memory management error - not releasing ownership from an existing reference before replacing that reference. Hmm, I should cover that one in a future post...</p></div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>Anonymous</div>
+<div class='content'>
+Thank you so much for this clear explanation. I started as a designer and am facing memory management for the first time. This is a life saver.</div>
+</div>
+<div class='comment'>
+<div class='author'>Pete</div>
+<div class='content'>
+@Symphist, feathers is never released because its reference count is never reduced down to 0, thus the memory system will never call dealloc. <br /><br />However, you should <b>NEVER</b> explicitly call dealloc on an object yourself (aside from the [super dealloc] call inside a dealloc implementation). You must manage memory using retain, release, autorelease and friends.</div>
+</div>
+<div class='comment'>
+<div class='author'>Symphist</div>
+<div class='content'>
+Hi, Obj-C noob with a C++ background here.<br /><br />There is something that is not clear to me. In your first paragraph, you say that feathers was never released. That&#39;s simply because we didn&#39;t call dealloc on it right? The second version of that code didn&#39;t help me understand.<br /><br />Thanks for your marvelous tutorial!</div>
+</div>
+<div class='comment'>
+<div class='author'>eric</div>
+<div class='content'>
+There seem to be diverging opinions about how to handle initialization of ivars in init methods, however your points about memory management are well taken.<br /><br />Per Apple Memory Management Programming Guide: &quot;The only places you shouldn’t use accessor methods to set an instance variable are in init methods and dealloc. To initialize a counter object with a number object representing zero, you might implement an init method as follows: - init {<br /><br />    self = [super init];<br /><br />    if (self) {<br /><br />        count = [[NSNumber alloc] initWithInteger:0];<br /><br />    }<br /><br />    return self;<br /><br />}<br />&quot;<br />Your &quot;Update&quot; post gives the only example that conforms to the Apple convention, though you remark that you don&#39;t like the approach, citing a lack of symmetry and the encouragement of other memory management errors.<br /><br />My comment is not a criticism or correction, but simply to draw attention to the Apple convention. Thanks for your post and explanations.</div>
+</div>
+<div class='comment'>
+<div class='author'>Asif Noor</div>
+<div class='content'>
+Nice work...The examples chosen were short and well explainatory...<br />Asif Noor</div>
+</div>
+<div class='comment'>
+<div class='author'>Pete Hodgson</div>
+<div class='content'>
+Thanks for the comments Jeff and Hyeeun.<br /><br />I wonder if creating explicit short-lived autorelease pools would be one option to allow the use of autorelease in a more deterministic way.<br /><br />That would introduce even more overhead of course. I&#39;d be interested to find out how much though.</div>
+</div>
+<div class='comment'>
+<div class='author'>Jeff</div>
+<div class='content'>
+Properties are an annoyingly easy way for Objective C newbies to shoot themselves in the foot in a variety of different ways.<br /><br />Also watch out for extensive use of autorelease.  We found that iPhone OS 2.X devices used a really shoddy algo for when its autorelease allocations were freed.  It got better in iPhone OS 3.x, but it&#39;s still not magic; for example, you should do explicit allocations &amp; deallocations in tight loops.  <br /><br />Early versions of BlackBerry OS had the same problem.  Pre-4.5 OSes had a horrid garbage collector.  If you asked how much free memory the device had, it would very frequently tell you 0 KB, and then moments later the OS would purge 3 MB of garbage.  So here your code thinks the device has no free memory, yet it really has 3MB.<br /><br />I miss C and C++, and manually keeping track of your allocs and deallocs without any wizardry.</div>
+</div>
+<div class='comment'>
+<div class='author'>hyou</div>
+<div class='content'>
+Thanks, Pete. I like your explanation with pretty boxes - very helpful to understand! :-)<br /><br />I agree with you that autorelease is clean and often very useful. However, I still think that we need to be careful to use it because autorelease makes allocated memory stay longer than necessary on the iPhone/iPad which has strict memory constraints. <br />(from Apple -  autorelease instead of release to an object extends the lifetime of that object at least until the pool itself is released)</div>
+</div>
+</div>

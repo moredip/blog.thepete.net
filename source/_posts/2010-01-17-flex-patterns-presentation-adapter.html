@@ -1,0 +1,135 @@
+---
+layout: post
+title: "Flex Patterns: Presentation Adapter"
+date: 2010-01-17T14:08:00-08:00
+comments: false
+categories:
+ - flex
+ - patterns
+---
+
+<div class='post'>
+<h1>Flex Patterns: Presentation Adapter</h1>
+
+<a onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}" href="http://1.bp.blogspot.com/_rzQrByr0AIg/S1aRKN1ceHI/AAAAAAAAFC0/G7CLFQUloUM/s1600-h/Presentation+Adapter+%28Abstract%29+Class+Diagram.png"><img style="margin: 0px auto 10px; display: block; text-align: center; cursor: pointer; width: 360px; height: 277px;" src="http://1.bp.blogspot.com/_rzQrByr0AIg/S1aRKN1ceHI/AAAAAAAAFC0/G7CLFQUloUM/s400/Presentation+Adapter+%28Abstract%29+Class+Diagram.png" alt="" id="BLOGGER_PHOTO_ID_5428686005540255858" border="0" /></a>
+
+Encapsulate the logic for presenting a domain object, and provide an object for skinny views to perform data-binding against.
+
+<h2>Problem</h2>
+<p>When using <a href="http://sl.thepete.net/presentation-model-pattern">Presentation Model</a> our goal is to bind UI elements in your Skinny View directly to individual components of  the Presentation Model. This requires translating information in Domain Model instances into a presentation-specific form. At the same time we need to be able to map back from that presentation-specific form to the underlying domain model instance in order to present user interactions in terms of our domain model.</p>
+
+<h2>Context</h2>
+<p>We are developing a UI component in a Flex application using some form of MVC/MVP. This UI component will be displaying information about a domain object, e.g. a list of Users. We are using the <a href="http://sl.thepete.net/presentation-model-pattern">Presentation Model</a> pattern or similar, so we want Skinny Views.</p>
+
+<h2>Forces</h2>
+<ul>
+<li>We need to transform information from a Domain Model class into something  suitable for display</li>
+<li>We want to keep formatting logic out of the view, using Flex databinding from view controls to a <a href="http://sl.thepete.net/presentation-model-pattern">Presentation Model</a></li>
+<li>We want to keep formatting logic out of the Domain Model, because it's presentation-specific, and not the responsibility of the domain model.</li>
+<li>Clients of our UI component expect to interact with it using instances of the Domain Model class. For example, clients should be able to pass in a list of Domain Model instances to display, and the UI component should publish events which refer to Domain Model instances.</li>
+</ul>
+
+<h2>Solution</h2>
+<p>We can use a Presentation Adapter (PA) to wrap a domain object (an instance of a Domain Model class). The PA provides a presentation-specific formatting of some or all of the information represented by that domain object. The PA also exposes a reference to the domain object itself. This allows UI component code to map from the PA back to the domain object is represents when reporting user interactions back out to clients of the UI component.</p>
+
+<h2>Example</h2>
+
+<a onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}" href="http://3.bp.blogspot.com/_rzQrByr0AIg/S1aR5lC0FtI/AAAAAAAAFC8/v5ihUbTWMNU/s1600-h/Presentation+Adapter+Class+Diagram.png"><img style="margin: 0px auto 10px; display: block; text-align: center; cursor: pointer; width: 400px; height: 267px;" src="http://3.bp.blogspot.com/_rzQrByr0AIg/S1aR5lC0FtI/AAAAAAAAFC8/v5ihUbTWMNU/s400/Presentation+Adapter+Class+Diagram.png" alt="" id="BLOGGER_PHOTO_ID_5428686819224196818" border="0" /></a>
+
+<p>Let's say we are creating a Post Listing component which lists a collection of blog posts, and allows the user to select specific posts from that list. Our Presentation Model needs to include a collection of posts to list, and our View will contain some kind of list control which will be bound directly to that collection of posts. We want each post to be listed in the UI using a specific format, which will include the post title and the number of comments associated with the post. The application's Domain Model contains a BlogPost class, and our component is expected to expose an interface which talks in terms with BlogPost instances. The client of the Post Listing component will supply a collection of BlogPost instances which it wishes to be displayed in the list. When a user selects a post the component's client expects to receive a 'post selected' event which includes the BlogPost instance that was selected by the user. In other words, the client does not need to know anything about the Presentation Adapter we will be using.</p>
+
+<p>We'll create a PostPA class which will act as a Presentation Adapter for the listing. It will expose a label field. The Presentation Model can hold a list of these PostPAs (one for each BlogPost supplied to the Post Listing component), and the View's list control can be bound directly to that list of PostPA instances.</p>
+
+<p>We also need some simple formatting logic which transforms a BlogPost instance into the appropriately formatted string which will eventually be shown in the list control. That formatting logic should live within the Post Listing component, as it's presentation-specific. In fact it's likely that the formatting is specific to this particular UI component. The Presentation Adapter is a good place to put this formatting logic (although there are alternatives which I'll see below in the Variants section).</p>
+
+<pre class="brush: as3; gutter: false">
+public class PostPA
+{
+ private var _post:BlogPost;
+ 
+ public function PostPA( post:BlogPost )
+ {
+  _post = post;
+ }
+ 
+ public function get label():String
+ {
+  return _post.title + " ["+ post.comments.length+" comments]";
+ }
+ 
+ public function get post():Post
+ {
+  return _post;
+ }
+
+}
+</pre>
+
+<p>We also need to map from BlogPost instances to PostPA instances, and vice versa. We'll put that logic in our Presentation Model. core UI logic can supply the Presentation Model with a collection of BlogPost instances, and the view will be updated with a list of corresponding PostPA instances. </p>
+
+<pre class="brush: as3; gutter: false">
+public class Model extends EventDispatcher
+{
+ function Model(){
+  _postPAs = [];
+  _selectedPostIndex = -1;
+ }
+ 
+ private var _selectedPostIndex:int;
+ private var _postPAs:Array;
+ 
+ public function get selectedPost():Post
+ {
+  if( _selectedPostIndex < 0 )
+   return null;
+  else
+   return _postPAs[_selectedPostIndex].post;
+ }
+ 
+ public function set selectedPostIndex(index:int):void
+ {
+  _selectedPostIndex = index;
+ }
+   
+ public function set posts(posts:Array):void
+ {
+  _selectedPostIndex = -1;
+  _postPAs = posts.map( function( post:Post, i:int, a:Array ):PostPA {
+   return new PostPA(post);
+  });
+  dispatchEvent(new Event("postPAsChange"));
+ } 
+ 
+ public function get posts():Array
+ {
+  return _postPAs.map( function( postPA:PostPA, i:int, a:Array ):Post {
+   return postPA.post;
+  });
+ }
+ 
+ [Bindable (event="postPAsChange")]
+ public function get postPAs():Array{ return _postPAs; }
+ 
+}
+</pre>
+
+<p>Our Post Listing component needs to send an event whenever a user selects a post, and that event needs to reference the BlogPost instance that was selected. To that end, the Presentation Model also exposes methods which allow the view to update the selected post based just on a list index, while the core UI logic can ask for the underlying BlogPost instance which was selected. Now, when the list control sends an event saying an item has been selected the View can update the Presentation Model appropriately and then signal the core UI logic. That logic can then ask the Presentation Model for the selected BlogPost, and dispatch a 'post selected' event, including that BlogPost instance in the event.</p>
+
+<a onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}" href="http://4.bp.blogspot.com/_rzQrByr0AIg/S1dV6uTYa1I/AAAAAAAAFDE/NokaPL0RP-M/s1600-h/Presentation+Adapter+Item+Selection+Interaction+Diagram.png"><img style="margin: 0px auto 10px; display: block; text-align: center; cursor: pointer;" src="http://4.bp.blogspot.com/_rzQrByr0AIg/S1dV6uTYa1I/AAAAAAAAFDE/NokaPL0RP-M/s400/Presentation+Adapter+Item+Selection+Interaction+Diagram.png" alt="" id="BLOGGER_PHOTO_ID_5428902343168518994" border="0" /></a>
+
+<h2>Variants</h2>
+
+<p>The decision on where and when the presentation formatting logic is done defines several variants on this pattern.</p>
+
+<h3>Dynamic Presentation Adapter</h3>
+Presentation formatting logic lives in the PA class, and the formatting is performed on-the-fly as the view requires it.
+<h3>Static Presentation Adapter</h3>
+Presentation formatting logic still lives in the PA class, but the formatting is done at construction time. Depending on usage patterns this could be more or less performant than the Dynamic Presentation Adapter variant.
+<h3>Dumb Presentation Adapter</h3>
+Presentation formatting logic lives within the Presentation Model which is creating the Presentation Adapter. In this case the Presentation Adapter itself becomes a simple value object with no logic, or even just a dynamically created object.
+
+<h2>Related Patterns</h2>
+<p>Generally a Presentation Adapter will be used in the context of a Presentation Model, where the Presentation Model contains instances of one or more Presentation Adapters (collections or otherwise). A Presentation Adapter is a specific form of the GoF's Adapter Pattern.</p>
+
+<h2>Alternative Patterns</h2>
+<p>Instead of a Presentation Adapter one could use a Transformer/Mapper, where a single Mapper instance performs the presentation-specific formatting for a whole class of domain objects. This Mapper is attached to the UI control as part of the binding mechanism, and does the formatting on the fly. The Mapper could be a simple Function, or an instance of a specialized Mapper class.</p></div>

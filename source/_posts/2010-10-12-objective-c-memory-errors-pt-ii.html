@@ -1,0 +1,80 @@
+---
+layout: post
+title: "Objective C memory errors pt II - Dangling Pointers"
+date: 2010-10-12T22:48:00-07:00
+comments: false
+---
+
+<div class='post'>
+<p>In my <a href="/2010/10/common-objective-c-memory-management.html">last post</a> I talked about memory leaks in Objective C. In this post I'll take about the converse - dangling pointers. In iOS a dangling pointer happens when you maintain a reference to an object which has been deallocated. I'd say the most common cause is failure to take ownership of an object you intend to maintain a reference to. Another common cause is when an object is accidently released multiple times by the same owner, leading to its retain count dropping to 0 and the object being deallocated before all the objects which hold references to the object release those references.<br />
+</p><br />
+<p>I'm going to illustrate this first type of dangling pointer bug (failing to take ownership of a reference) and try to explain in detail the cause of the error and its effects. We'll use a pedagogical Duck class similar to the one in my previous post:<br />
+</p><br />
+<pre class="brush: c; gutter: false;">@interface Duck : NSObject {
+  NSArray *_feathers;
+}
+@end
+</pre><br />
+<p>We have a Duck which holds a reference to an array of feathers. We'd like to ensure that our Duck's feathers array always points to a valid NSArray instance, so we set the reference to an empty array during construction:<br />
+</p><br />
+<pre class="brush: c; gutter: false;">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    _feathers = [NSArray array];
+  }
+  return self;
+}
+</pre><br />
+<p>Once again we have a memory bug here, but this time it's the flip side of the memory management coin from a memory leak - a dangling pointer. Instead of failing to relinquish ownership of a reference we're failing to <em>take</em> ownership. We are asking NSArray to create an instance using the [NSArray array] factory method, which does NOT transfer any ownership to the caller. This is explained quite clearly in <a href="http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html#//apple_ref/doc/uid/20000994-BAJHFBGH">Apple's Memory Management Rules</a> - if a method does not start with <code>alloc</code>, <code>new</code> or <code>copy</code> then the caller is not automatically granted ownership of the object, and should take that ownership explicitly by calling retain if it intends to maintain a reference to that object.<br />
+</p><br />
+<p>I'll illustrate one scenario of how this bug could manifest itself:</p><br />
+<br />
+<br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://2.bp.blogspot.com/_rzQrByr0AIg/TLVBJClOLRI/AAAAAAAAFZM/pslgwyVbxD8/s1600/ObjCDanglingPointer_1.jpg" /><p>1) In our init method we call [NSArray array] which creates an NSArray instance. The creator of the array inside the implementation of [NSArray array] has to keep ownership of the instance for a certain period of time, otherwise its retain count would drop to 0 and it would immediately be deallocated.<br />
+</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://1.bp.blogspot.com/_rzQrByr0AIg/TLVBJi5bmOI/AAAAAAAAFZQ/qTTCtI0gyOY/s1600/ObjCDanglingPointer_2.jpg" /><p>2) still in the init method, we update _feathers to refer to the array, but neglect to take any ownership of the array.<br />
+</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://3.bp.blogspot.com/_rzQrByr0AIg/TLVBKOAtISI/AAAAAAAAFZU/K8Wp87-Inwg/s1600/ObjCDanglingPointer_3.jpg" /><p>3) at some later point while Duck is still alive the creator (and sole owner) of the array instance relinquishes its ownership of the array instance, dropping the array's retain count down to 0. This might be because it has been deallocated, or maybe it is replacing its reference to the array with something else, or some other reason.<br />
+</p></div><br />
+<div style="border: 1px dotted; padding-left: 1em; padding-right: 1em;"><img style="border:0px"
+ src="http://2.bp.blogspot.com/_rzQrByr0AIg/TLVBKvgkDMI/AAAAAAAAFZY/6xAlg_f0nqU/s1600/ObjCDanglingPointer_4.jpg" /><p>4) The array's retain count has dropped to 0, so it is immediately deallocated and its memory reclaimed for future use by the memory management system. Our Duck instance has no way of knowing this, and is still holding a reference to where the array used to be. This is the dangling pointer.<br />
+</p></div><br />
+<p>Subsequently when the Duck instance attempts to talk to that array it is going to find itself talking to some random object, or just to arbitrary junk data. Crashes will ensue... eventually.</p><br />
+<p>Note that the sole owner of the array as shown in the diagrams would in a lot of cases be an autorelease pool. This is because the easiest way to handle memory management when implementing factory methods like [NSArray array] is to create the object to be returned using alloc, and then transfer ownership to the autorelease pool before returning the object, like so:</p><br />
+<pre class="brush: c; gutter: false;">+ (NSArray *) array {
+  return [[[NSArray alloc]init]autorelease];
+}
+</pre><br />
+<p>What makes this kind of dangling pointer error particularly tricky is that in certain use cases it will not manifest at all. If the usage of Duck is such that it always goes out of scope before the NSArray instance is deallocated then no issues will be detected. This could happen if the Duck instance and the NSArray instance it references are both owned by the same autorelease pool, for instance. However, when the usage patterns of Duck change you could suddenly see errors - even if you haven't changed the (buggy) implementation of the Duck class itself in months!</p><br />
+<h2>What should we have done?</h2><br />
+<h3>Use an object creation method which implicitly grants ownership to the caller</h3><pre class="brush: c; gutter: false;">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    _feathers = [[NSArray alloc]init];
+  }
+  return self;
+}
+</pre><br />
+<h3>Use retain to explicitly take ownership</h3><br />
+<pre class="brush: c; gutter: false;">- (id) init
+{
+  self = [super init];
+  if (self != nil) {
+    _feathers = [[NSArray array] retain];
+  }
+  return self;
+}
+</pre></div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>Anonymous</div>
+<div class='content'>
+Thanks man your post really help me a lot.<br />Thanks Again<br />You rocks</div>
+</div>
+</div>

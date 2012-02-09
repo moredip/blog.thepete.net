@@ -1,0 +1,45 @@
+---
+layout: post
+title: "Ruby Facets: the mash method"
+date: 2010-02-18T16:11:00-08:00
+comments: false
+categories:
+ - ruby
+---
+
+<div class='post'>
+<p>I keep meaning to write up some of the useful gems (if you'll pardon the pun) which are hidden in the super-handy <a href="http://facets.rubyforge.org/">Facets gem</a>. Today I'll cover <a href="http://facets.rubyforge.org/apidoc/api/core/classes/Enumerable.html#M000524">Enumerable#mash.</a></p>
+
+<p>
+Let's say you have a list of Users, and you'd like to create a hash which lets you look up the Users based on their login. You might write something like:
+</p>
+
+<pre class="brush: ruby; gutter: false">
+def create_login_hash_for( users )
+  user_login_hash = {}
+  users.each do |user|
+    user_login_hash[user.login] = user
+  end
+  user_login_hash
+end
+</pre>
+
+<p>With Enumerable#mash, you can trim that down to:</p>
+
+<pre class="brush: ruby; gutter: false">
+def create_login_hash_for( users )
+  users.mash do |user|
+    [user.login,user]
+  end
+end
+</pre>
+
+<p>This is much more succinct. More importantly, it expresses the <em>intention</em> more clearly.</p></div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>tea42</div>
+<div class='content'>
+Just FYI, &quot;mash&quot; stands for Map hASH. Also, the original name for the method is #graph. Both #mash and #graph are supported (sort of like #map vs. #collect).</div>
+</div>
+</div>

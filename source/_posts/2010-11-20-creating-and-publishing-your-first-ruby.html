@@ -1,0 +1,186 @@
+---
+layout: post
+title: "Creating and publishing your first ruby gem"
+date: 2010-11-20T17:55:00-08:00
+comments: false
+---
+
+<div class='post'>
+<h2 id="introduction">Introduction</h2> 
+<p>In this post I&rsquo;m going to cover the basics of creating and publishing a gem using the <code>bundle gem</code> command provided by <a href="http://gembundler.com/">Bundler</a>. We&rsquo;re going to use bundler to create a gem template for us. We&rsquo;ll then take that skeleton gem, add some functionality to it, and publish it for all the world to use.</p> 
+ 
+<p>For the purposes of this tutorial I need a very simple example of something which you could conceivably want to release as a gem. How about a simple <a href="http://sinatrarb.com">Sinatra</a> web app which tells you the time? Sure, that&rsquo;ll work. We&rsquo;ll call it Didactic Clock. In order to make this server implementation need more a couple of lines of code we&rsquo;ll add the requirement that the clock tells you the time in a verbose form like &ldquo;34 minutes past 4 o&rsquo;clock, AM&rdquo;.</p> 
+ 
+<h2 id="preparing-to-create-a-gem">Preparing to create a gem</h2> 
+<p>A great way to create and test gems in a clean environment is to use the awesome <a href="http://rvm.beginrescueend.com/integration/bundler/">rvm</a> and in particular rvm&rsquo;s awesome <a href="http://rvm.beginrescueend.com/gemsets/basics/">gemset</a> feature. I assume you&rsquo;re already set up with rvm. If not <a href="http://rvm.beginrescueend.com/rvm/install/">go get set up now</a>!</p> 
+ 
+<p>First off we&rsquo;ll create a seperate gemset so that we can create and install our gem in a clean environment and be sure that someone installing our gem will have all the dependencies they need provided to them. We&rsquo;re going to be creating a gem called didactic_clock, so we&rsquo;ll name our gemset similarly. We&rsquo;ll create the gemset and start using it by executing:</p> 
+ 
+<pre><code> rvm gemset create didactic_clock
+ rvm gemset use didactic_clock
+</code></pre> 
+ 
+<p>From now on I&rsquo;ll assume we&rsquo;re always using this clean-room gemset.</p> 
+ 
+<h2 id="creating-the-skeleton">Creating the skeleton</h2> 
+ 
+<p>First lets install bundler into our gemset:</p> 
+ 
+<pre><code>gem install bundler
+</code></pre> 
+ 
+<p>Now we&rsquo;ll ask bundler to create the skeleton of a gem. In this tutorial we&rsquo;re going to be creating a gem called didactic_clock. We&rsquo;ll ask bundler to create a skeleton for a gem with that name by calling:</p> 
+ 
+<pre><code>bundle gem didactic_clock
+</code></pre> 
+ 
+<p>You should see some output like:</p> 
+ 
+<pre><code>  create  didactic_clock/Gemfile
+  create  didactic_clock/Rakefile
+  create  didactic_clock/.gitignore
+  create  didactic_clock/didactic_clock.gemspec
+  create  didactic_clock/lib/didactic_clock.rb
+  create  didactic_clock/lib/didactic_clock/version.rb
+Initializating git repo in /Users/pete/git/didactic_clock
+</code></pre> 
+ 
+<h2 id="modifying-our-gemspec">Modifying our gemspec</h2> 
+<p>Bundler creates a basic .gemspec file which contains metadata about the gem you are creating. There are a few parts of that file which we need to modify. Let&rsquo;s open it up and see what it looks like:</p> 
+ 
+<pre class="brush: ruby; gutter: false"> 
+   # -*- encoding: utf-8 -*-
+   $:.push File.expand_path("../lib", __FILE__)
+   require "didactic_clock/version"
+ 
+   Gem::Specification.new do |s|
+    s.name        = "didactic_clock"
+    s.version     = DidacticClock::VERSION
+    s.platform    = Gem::Platform::RUBY
+    s.authors     = ["TODO: Write your name"]
+    s.email       = ["TODO: Write your email address"]
+    s.homepage    = "http://rubygems.org/gems/didactic_clock"
+    s.summary     = %q{TODO: Write a gem summary}
+    s.description = %q{TODO: Write a gem description}
+ 
+    s.rubyforge_project = "didactic_clock"
+ 
+    s.files         = `git ls-files`.split("\n")
+    s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+    s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+    s.require_paths = ["lib"]
+   end
+</pre> 
+ 
+<p>You can see that Bundler has set up some sensible defaults for pretty much everything. Note how your gem version information is pulled out of a constant which Bundler was nice enough to define for you within a file called version.rb. You should be sure to update that version whenever you publish any changes to your gem. Follow the principles of <a href="http://semver.org/">Semantic Versioning</a>.</p> 
+ 
+<p>Also note that there are some TODOs in the authors, email, summary, and description fields. You should update those as appropriate. Everything else can be left as is for the time being.  </p> 
+ 
+<h2 id="adding-a-class-to-our-lib">Adding a class to our lib</h2> 
+ 
+<p>We&rsquo;ll start by creating a TimeKeeper class which will report the current time in the verbose format we want the Didactic Clock server to use. To avoid polluting the client code&rsquo;s namespace it is important to put all the classes within your gem in an enclosing namespace module. In our case the namespace module would be DidacticClock, so we&rsquo;re creating a class called DidacticClock::TimeKeeper. Another convention which is important to follow when creating gems is to keep all your library classes inside a folder named after your gem. This avoids polluting your client&rsquo;s load path when your gem&rsquo;s lib path is added to it by rubygems. So taking both of these conventions together we&rsquo;ll be creating a DidacticClock::TimeKeeper class in a file located at lib/didactic_clock/time_keeper.rb. Here&rsquo;s what that file looks like:</p> 
+ 
+<pre class="brush: ruby; gutter: false"> 
+    module DidacticClock
+    class TimeKeeper
+     def verbose_time
+      time = Time.now
+      minute = time.min
+      hour = time.hour % 12
+      meridian_indicator = time.hour &lt; 12 ? 'AM' : 'PM'
+ 
+      "#{minute} minutes past #{hour} o'clock, #{meridian_indicator}"
+     end
+    end
+   end
+</pre> 
+ 
+<h2 id="adding-a-script-to-our-bin">Adding a script to our bin</h2> 
+<p>We want users of our gem to be able to launch our web app in sinatra&rsquo;s default http server by just typing <code>didactic_clock_server</code> at the command line. In order to achieve that we&rsquo;ll add a script to our gem&rsquo;s bin directory. When the user installs our gem the rubygems system will do whatever magic is required such that the user can execute the script from the command line. This is the same magic that adds the spec command when you install the rspec gem, for example. </p> 
+ 
+<p>So we&rsquo;ll save the following to bin/didactic_clock_server</p> 
+ 
+<pre class="brush: ruby; gutter: false"> 
+   #!/usr/bin/env ruby
+ 
+   require 'sinatra'
+   require 'didactic_clock/time_keeper'
+ 
+   # otherwise sinatra won't always automagically launch its embedded 
+   # http server when this script is executed
+   set :run, true
+ 
+   get '/' do
+    time_keeper = DidacticClock::TimeKeeper.new
+    return time_keeper.verbose_time
+   end
+</pre> 
+ 
+<p>Note that we require in other gems as normal, we <em>don&rsquo;t</em> require rubygems, and that we <em>don&rsquo;t</em> do any tricks with relative paths or <code>File.dirname(__FILE__)</code> or anything like that when requiring in our TimeKeeper class. Rubygems handles all that for us by setting up the load path correctly.</p> 
+ 
+<h2 id="adding-a-dependency">Adding a dependency</h2> 
+<p>Our little web app uses Sinatra to serve up the time, so obviously we need the Sinatra gem installed in order for our own gem to work. We can easily express that dependency by adding the following line to our .gemspec:</p> 
+ 
+<pre><code>s.add_dependency "sinatra"
+</code></pre> 
+ 
+<p>Now Rubygems will ensure that sinatra is installed whenever anyone installs our didactic_clock gem.</p> 
+ 
+<h2 id="building-the-gem-and-testing-it-locally">Building the gem and testing it locally</h2> 
+ 
+<p>At this point we&rsquo;re done writing code. Bundler created a git repo as part of the <code>bundle gem</code> command. Let&rsquo;s check in our changes to the git repo. <code>git commit -a</code> should do the trick, but obviously feel free to use whatever git-fu you prefer.</p> 
+ 
+<p>Now we&rsquo;re ready to build the gem and try it out. Make sure you&rsquo;re still in the clean-room gemset we created earlier, and then run:</p> 
+ 
+<pre><code>rake install
+</code></pre> 
+ 
+<p>to build our didactic_clock gem and install it into our system (which in our case means installing it into our didactic_clock gemset). If we run <code>gem list</code> at this point we should see didactic_clock in our list of gems, along with sinatra (which will have been installed as a dependency).</p> 
+ 
+<p>Now we&rsquo;re ready to run our app by calling <code>didactic_clock_server</code> from the command line. We should see sinatra start up, and if we visit http://localhost:4567/ we should see our app reporting the time in our verbose format. Victory!</p> 
+ 
+<h2 id="publishing-our-gem">Publishing our gem</h2> 
+<p>The last step is to share our creation with the world. Before we do that you&rsquo;ll need to set up rubygems in your system to publish gems. The <a href="https://rubygems.org/pages/gem_docs">instructions at rubygems.org</a> are easy to follow.</p> 
+ 
+<p>Bundler provides a <code>rake publish</code> task which automates the steps you would typically take when publishing a version of your gem, but it&rsquo;s fairly opinionated in how it does so. The task will tag your current git commit, push from your local git repo to some upstream repo (most likely in github), and then finally build your gem and publish your .gem to rubygems.org. If you don&rsquo;t have an upstream repo configured then you&rsquo;ll probably get an error like:</p> 
+ 
+<pre><code>   rake aborted!
+   Couldn't git push. `git push  2&gt;&amp;1' failed with the following output:
+ 
+   fatal: No destination configured to push to.
+</code></pre> 
+ 
+<p>So, now would be the time to set up an upstream repo. Doing that with github is <a href="http://help.github.com/creating-a-repo/">really straightforward</a>. Once you have your local git repo configured with an upstream repo you can finally publish your gem with <code>rake publish</code>. </p> 
+ 
+<p>Now anyone who wants to install your gem can do so with a simple <code>gem install</code> command. Congratulations! Fame and fortune await you!</p> 
+ 
+<h2 id="conclusion">Conclusion</h2> 
+<p>Hopefully I&rsquo;ve shown that creating and publishing a well-behaved gem is pretty simple. The didactic_clock sample I created is <a href="https://github.com/moredip/didactic_clock">up on github</a>, and of course the gem is <a href="https://rubygems.org/gems/didactic_clock">published on rubygems.org</a> and can be installed with <code>gem install didactic_clock</code>.</p></div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>Matthew</div>
+<div class='content'>
+Awesome article! I had an issue with `rake publish` (now `rake release`), but was still able to push to ruby gems with `gem push ruby_package` where ruby_package is the local gem package.</div>
+</div>
+<div class='comment'>
+<div class='author'>Vic</div>
+<div class='content'>
+This is awesome stuff, had to link to it from my blog and Ruby Learning!</div>
+</div>
+<div class='comment'>
+<div class='author'>John Wang</div>
+<div class='content'>
+This is great and I love bundler, but I would like to see the testing part get integrated like jeweler does. Testing is a big part of the ruby community and having rspec, testunit, cucumber, or others baked in as options like jeweler has would be ideal.</div>
+</div>
+<div class='comment'>
+<div class='author'>Hallison Batista</div>
+<div class='content'>
+Great! There is a project that helps to create new projects: <a href="http://rubygems.org/gems/prigner" rel="nofollow">Prigner</a>. Try it.</div>
+</div>
+<div class='comment'>
+<div class='author'>Pavel Nikitin</div>
+<div class='content'>
+Great article ! Waiting for wave of new powerful and helpful gems.</div>
+</div>
+</div>

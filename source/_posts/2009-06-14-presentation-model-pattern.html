@@ -1,0 +1,179 @@
+---
+layout: post
+title: "Presentation Model Pattern"
+date: 2009-06-14T18:32:00-07:00
+comments: false
+categories:
+ - flex
+ - patterns
+---
+
+<div class='post'>
+<h1>Presentation Model</h1>
+
+<p>We want to achieve a Skinny View without the View needing to expose UI details to the Controller.</p>
+
+<a onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}" href="http://1.bp.blogspot.com/_rzQrByr0AIg/SjsXodNSTaI/AAAAAAAADaM/e6empQbFDig/s1600-h/Presentation+Model+Class+Diagram.png"><img style="display:block; margin:0px auto 10px; text-align:center;cursor:pointer; cursor:hand;width: 400px; height: 318px;" src="http://1.bp.blogspot.com/_rzQrByr0AIg/SjsXodNSTaI/AAAAAAAADaM/e6empQbFDig/s400/Presentation+Model+Class+Diagram.png" border="0" alt=""id="BLOGGER_PHOTO_ID_5348894966235155874" /></a>
+
+<h2>Also known as</h2>
+<p>View State, Logical View</p>
+
+<h2>Problem</h2>
+<p>We want to have as much presentation logic under test as we can by having a Skinny View. At the same time we don't want our Controller to be burdened with the minutiae of maintaining UI elements.</p>
+
+<h2>Context</h2>
+<p>We are creating a presentation layer in Flex using some variant of MVC/MVP and want to implement controller logic which modifies the view. </p>
+
+<h2>Forces</h2>
+<ul>
+<li>Exposing individual UI elements to our controller makes tests fragile and tedious to write.</li>
+<li>Burdening our controller with both abstract presentation logic (what to do when a user clicks a button) and concrete UI display logic (directly modifying the state of UI elements) violates <a href="http://www.objectmentor.com/resources/articles/srp.pdf">SRP</a>.</li>
+<li>We want to take advantage of the powerful data binding functionality that Flex offers.</li>
+<li>We do not want our Domain/Business logic to be polluted with UI layer details.</li>
+</ul>
+
+<h2>Solution</h2>
+
+<p>We create a Presentation Model that is a logical representation of the view. The controller maintains the view by manipulating the Presentation Model. We bind our view directly to the Presentation Model, so any changes to the Presentation Model are immediately reflected in the view.</p>
+
+<p>To keep as much logic as possible out of the View and under test we advise not allowing the View to update the model directly. All updating must be done by the Controller. Often that will be initiated via a handler on the Controller called by the view in response to some user action.</p>
+
+<h2>Example</h2>
+
+<p>In this very simple example we will assume we're working on a Contact Manager application. Specifically we're working on a UI which contains a list of contacts and allows a user to add contacts to the list. </p>
+
+<h3>Presentation Model</h3>
+<p>We'll create a Presentation Model for that screen like this:</p>
+<pre class="brush: as3; gutter: false">
+package com.example.contacts.ui
+{
+ import mx.collections.ArrayCollection;
+ 
+ 
+ [Bindable]
+ public class Model
+ {
+  public function Model()
+  {
+   names = new ArrayCollection();
+  }
+  
+  public var names:ArrayCollection;
+ }
+}
+</pre>
+
+<h3>View</h3>
+<p>Next we'll create a view which binds to that Presentation Model:</p>
+
+<pre class="brush: xml; gutter: false">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+
+&lt;mx:Canvas xmlns:mx=&quot;http://www.adobe.com/2006/mxml&quot; 
+ width=&quot;600&quot; height=&quot;600&quot; 
+ implements=&quot;com.example.contacts.ui.IView&quot; 
+ creationComplete=&quot;onCreationComplete()&quot;&gt;
+ &lt;mx:HBox&gt;
+
+  &lt;mx:VBox&gt;
+   &lt;mx:Form height=&quot;100%&quot; width=&quot;100%&quot;&gt;
+   &lt;mx:FormItem label=&quot;First Name:&quot;&gt;
+    &lt;mx:TextInput id=&quot;tiFirstName&quot;/&gt;
+
+   &lt;/mx:FormItem&gt;
+   &lt;mx:FormItem label=&quot;Last Name:&quot;&gt;
+    &lt;mx:TextInput id=&quot;tiLastName&quot;/&gt;
+   &lt;/mx:FormItem&gt;
+   &lt;mx:Button label=&quot;Add Contact&quot; click=&quot;onAddContactClick()&quot;/&gt;
+
+  &lt;/mx:Form&gt;
+  &lt;/mx:VBox&gt;
+  &lt;mx:VBox&gt;
+   &lt;mx:List id=&quot;cbNames&quot; dataProvider=&quot;{_model.names}&quot; /&gt;
+
+  &lt;/mx:VBox&gt;
+ &lt;/mx:HBox&gt;
+
+&lt;mx:Script&gt;
+ &lt;![CDATA[
+  import com.example.contacts.*;
+  
+  private var _controller:Controller = null;
+  
+  [Bindable]
+  private var _model:Model = null;
+  public function set model( value :Model ):void {
+   _model = value;
+  } 
+
+  private function onAddContactClick():void {
+   _controller.onAddName( tiFirstName.text, tiLastName.text );
+  }
+ 
+  public function clearNameInputFields():void {
+   tiFirstName.text = '';
+   tiLastName.text = '';
+  }
+ ]]&gt;
+&lt;/mx:Script&gt;
+&lt;/mx:Canvas&gt;
+</pre>
+
+
+<h3>Controller</h3>
+<p>Finally we'll implement our Controller:</p>
+
+<pre class="brush: as3; gutter: false">
+package com.example.contacts.ui
+{ 
+ public class Controller
+ {
+  private var _model: Model;
+  private var _view : IView;
+
+  public function Controller() {
+   _model = new Model();
+   _view = null;
+  }
+  
+  internal function bindView(view: IView): void {
+   _view = view;
+   _view.model = _model;
+  }
+  
+  internal function onAddName( firstName:String, lastName:String ):void {
+   _model.names.addItem( lastName + ", " + firstName );   
+  }
+ }
+}
+</pre>
+
+<h3>Communication Diagram</h3>
+<a onblur="try {parent.deselectBloggerImageGracefully();} catch(e) {}" href="http://3.bp.blogspot.com/_rzQrByr0AIg/SjscZvLLGiI/AAAAAAAADaU/pQ3bl_Sr1eE/s1600-h/Presentation+Model+Sequence+Diagram.png"><img style="display:block; margin:0px auto 10px; text-align:center;cursor:pointer; cursor:hand;width: 400px; height: 296px;" src="http://3.bp.blogspot.com/_rzQrByr0AIg/SjscZvLLGiI/AAAAAAAADaU/pQ3bl_Sr1eE/s400/Presentation+Model+Sequence+Diagram.png" border="0" alt=""id="BLOGGER_PHOTO_ID_5348900210918234658" /></a>
+
+<p>The communication diagram above shows how the three classes collaborate to handle a user interaction event. The user takes an action, which results in an event handler in the View being called. The View's event handler delegates immediately to a handler method in the Controller. The Controller's handler method performs whatever logic is necessary, including updating the Presentation Model. That update indirectly triggers Flex data binding to update the View's UI elements. Note that communication tends to travel in one direction here - From View out to Controller, from Controller to Presentation Model, and from Presentation Model back to View. It is rare for a Controller to communicate directly with its View, and it is expressly forbidden for a View to directly manipulate the Presentation Model.</p>
+
+<p>Note that the View is very skinny - it mostly just binds to the model and delegates handlers straight through to the Controller. Also note that the controller doesn't interact directly with the View when manipulating the UI. It just manipulates the Presentation Model, which results in the UI updating thanks to the View's data binding.</p>
+
+<p>You can also see that we didn't follow the Pattern dogmatically in this example. We could have pulled the View's clearNameInputFields() method into the Controller by representing the contents of those 2 input fields in the Presentation Model and then binding those to the view. That would then allow us to clear the input fields by clearing the corresponding Presentation Model properties. However, in this case I decided that it was a nicer separation of concerns to hide the details of those elements from the Controller and the Presentation Model. Instead the View exposes a simple method with an <a href="http://c2.com/cgi-bin/wiki?IntentionRevealingNames">Intention Revealing Name</a>. This removes the need for the Presentation Model to be cluttered with these elements just to serve the one operation of clearing the fields.</p>
+
+<p>This is a very basic example, but hopefully it conveys the concept. For a more sophisticated UI the View would have additional UI elements which would be bound to additional properties added into the Presentation Model.</p>
+
+
+<h2>Resulting Context</h2>
+
+<ul>
+<li>It is extremely easy to test how our Controller is modifying our View.</li>
+<li>Our View no longer has to expose its UI elements.</li>
+<li>Our Controller no longer has to deal with the View's UI elements.</li>
+<li>Data binding allows our View to contain very little logic related to updating UI elements.</li>
+</ul>
+
+<h2>Rationale</h2>
+<p>It is really powerful to take advantage of data binding in Flex in order to simplify your view logic. At the same time it doesn't make sense to bind directly to our domain model classes. These classes are focused on representing the relationships and rules of our business domain, and should not be concerned with the UI layer at all. We need to map domain concepts like 'Collection Of Users' to UI concepts like 'list of strings for a dropdown'. Presentation Model allows us to do that. Presentation Model also allows us to very easily test the way our Controller updates the UI. Our tests simply have to exercise the Controller logic that is under test and then check the state of the Presentation Model.</p>
+
+<h2>Related Patterns</h2>
+<p>Presentation Model is really just a twist on Fowler's <a href="http://martinfowler.com/eaaCatalog/twoStepView.html">Two Step View</a>, focusing on MVC/MVP and with a consideration of Flex data binding.</p>
+
+<h2>Authors</h2>
+<p>Pete Hodgson, Hosung Hwang</p></div>

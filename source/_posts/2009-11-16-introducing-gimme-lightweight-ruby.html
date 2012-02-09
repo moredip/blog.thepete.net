@@ -1,0 +1,88 @@
+---
+layout: post
+title: "Introducing Gimme: a lightweight ruby Registry"
+date: 2009-11-16T20:28:00-08:00
+comments: false
+categories:
+ - ruby
+---
+
+<div class='post'>
+I recently created <a href="http://github.com/moredip/gimme">Gimme</a>, a small ruby gem which allows you to configure and access a simple <a href="http://martinfowler.com/eaaCatalog/registry.html">Registry</a> using a nice little DSL. 
+
+<h1>Gimme in a paragraph</h1>
+
+The general idea of Gimme is to allow a single point for configuring the well known services which your application uses (think DB connection, twitter API gateway, email server, etc). Once configured Gimme then exposes a single point to access those services, without needing to resort to singletons or global variables.
+
+<h1>Show me teh codez</h1>
+Here's a simple example showing how you would configure your registry:
+
+<pre class="brush: ruby; gutter: false">
+Gimme.configure |g|
+  g.for_the(ExternalService) do |env,name|
+    ExternalService.new(env[:setting1],env[:setting2])
+  end
+end
+</pre>
+
+and here's how you'd use it from within your app:
+
+<pre class="brush: ruby; gutter: false">
+Gimme.the(ExternalService).some_method
+</pre>
+
+Here's a more complete example, showing both configuration and usage:
+
+<pre class="brush: ruby; gutter: false">
+# your Emailer class
+
+class Emailer
+  def initialize( smtp_hostname, port )
+    @smtp_hostname, @port = smtp_hostname, port
+    puts "creating an emailer: #{inspect}"
+  end
+
+  def send_email( subject )
+    puts "Sending email '#{subject}' via #{inspect}"
+    # ...
+  end
+
+  def inspect
+    "#{@smtp_hostname}:#{@port}"
+  end
+end
+
+
+# your Gimme configuration
+
+Gimme.configure do |g|
+  g.for_the( Emailer ) do |env|
+    email_settings = env[:email_settings]
+    Emailer.new(email_settings[:hostname],email_settings[:port])
+  end
+end
+
+Gimme.environment = {:email_settings => {:hostname => 'smtp.mymailserver.com', :port => '2525'} }
+
+
+
+# in your app
+
+
+Gimme.the(Emailer).send_email( "Gimme is the awesomez" )
+Gimme.the(Emailer).send_email( "Emailing is fun" )
+Gimme.the(Emailer).send_email( "notice that only one Emailer was created above" )
+Gimme.the(Emailer).send_email( "even though we sent 4 emails" )
+</pre>
+
+<h1>Pseudo-singletons</h1>
+If you use the Gimme#for_the(Service) form when configuring Gimme then gimme will only create one instance of that object. If you use the Gimme#for_a(Service) form then the creation block will be called each time you ask for an instance of that object. That way things which hold on to expensive resources (database connections, TCP sockets) can be shared within your app, which services which need to maintain unique state for each client can be private to each client.
+
+<h1>Environments</h1>
+In any non-trivial application you need to configure your services. You can supply Gimme with an environment hash which it will then pass to your creation blocks whenever you ask for an object. This allows you to store settings like smtp hostnames, database passwords, twitter API keys, etc in a single environment hash, and use that hash in one place to configure all your external services at the point they are created.
+
+<h1>Dependency Injection/IoC</h1>
+There is nothing to stop you from calling Gimme.a() or Gimme.the() from within a creation block. This allows you to use Gimme as a lightweight IoC container.
+
+<h1>Check it out!</h1>
+Check out <a href="http://github.com/moredip/gimme">the github page</a> for more info, including lots of example usages, and a more detailed README.</div>

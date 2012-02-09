@@ -1,0 +1,32 @@
+---
+layout: post
+title: "TickTock: A dirt-simple stopwatch class for actionscript"
+date: 2010-03-09T14:33:00-08:00
+comments: false
+categories:
+ - flex
+---
+
+<div class='post'>
+I just threw together a really straightforward stopwatch class, for use when profiling operations in ActionScript code. You can either use it in an old-skool procedural way:
+
+<pre class="brush: as3; gutter: false">
+var tt:TickTock = new TickTock();
+tt.start();
+doSomeWork();
+tt.stop();
+trace( "That took "+tickTock.elapsedTimeInMilliseconds+" millisconds" );
+</pre>
+
+or in a fancy-pants, functional, closure-y way:
+
+<pre class="brush: as3; gutter: false">
+var tt:TickTock = TickTock.measure( function(){
+  doSomeWork();
+});
+trace( "That took "+tickTock.elapsedTimeInMilliseconds+" millisconds" );
+</pre>
+
+Being primarily a ruby guy, I prefer the fancy-pants approach ;)
+
+The class, along with a little sample app, is <a href="http://github.com/moredip/TickTock">up on GitHub now</a>.</div>

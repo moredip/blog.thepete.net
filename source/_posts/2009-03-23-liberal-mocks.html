@@ -1,0 +1,42 @@
+---
+layout: post
+title: "Liberal Mocks"
+date: 2009-03-23T16:53:00-07:00
+comments: false
+categories:
+ - flex
+---
+
+<div class='post'>
+I've been using <a href="http://code.google.com/p/mock4as/">mock4as</a> recently as part of a drive to get better test coverage in a flex project. As I used it I noticed  a few features which I've seen in other mocking libraries that were missing. I did what any engineer with an itch to scratch might do in such a situation - I started to implementing the features in mock4as that I wanted to use.<br/><br/>
+
+One of the things I added was support for a pattern/feature which I'm going to refer to here as 'liberal mocks'. I am not really sure what the right name for this pattern is. I've seen it called 'null object' before, and also 'stubs'. In my opinion both those terms are too overloaded to be used in this context, although the <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">Null Object</a> pattern is very similar to what I'll be describing.<br/><br/>
+
+I definitely wouldn't use the word 'stub' in connection to this pattern, although I've seen that done in other mocking libraries. For a start there is already <a href="http://martinfowler.com/articles/mocksArentStubs.html">way too much confusion</a> in automated testing between Stubs and Mocks. For the record, my definition of a Stub is pretty close to what's described in the <a href="http://xunitpatterns.com/index.html">XUnit Test Patterns</a> book (which I highly recommend). It's a <a href="http://xunitpatterns.com/Test%20Double.html">Test Double</a> which is used to control indirect input into a system under test, and possibly to record indirect output for later verification. That second part is where my definition differs from Meszaros's - I merge <a href="http://xunitpatterns.com/Test%20Stub.html">Test Stub</a> and <a href="http://xunitpatterns.com/Test%20Spy.html">Test Spy</a> together. Anyway, I'd love to hear from anyone who has a better (or more 'correct') name for the pattern I'm describing.<br/><br/>
+
+On to the main attraction. A Liberal Mock is a mock which will not fail when it receives an unexpected method. Instead it will silently ignore the method call. Contrast this to a regular, or 'strict' mock. In most mocking libraries a standard mock which receives a method call that was not specified while the mock's expectations were being set will be considered an error, and the mock will not pass verification.<br/><br/>
+
+A couple of unit tests from the mock4as library's test suite should help to illustrate this:<br/><br/>
+
+<pre class="brush: as3;gutter: false">
+public function
+testFailsIfUnexpectedMethodCalled():void
+{
+  var mock:MockSomeInterface = new MockSomeInterface();
+  mock.doSomething();
+  assertFalse(mock.success());
+}
+
+public function
+testSuccess_whenUnExpectedMethodCalledOnLiberalMock():void
+{
+  var mock:MockSomeInterface = new MockSomeInterface();
+  mock.isLiberal();
+  mock.doSomething();
+  assertTrue(mock.errorMessage(), mock.success());
+}
+
+</pre>
+That covers the what, now on to the why. The main scenario where I find myself reaching for liberal mocks is when I have a method which uses several features of a dependency, but I'm writing a test which is only interested in certain aspects of that usage. For example, let's say I have a controller object which is responsible for maintaining a view object. The controller has an <span style="font-family:courier new;">initialize()</span> method which sets the view's UI elements to some initial state, and I'd like to get that method under test. Now if the view has a lot of UI elements I wouldn't want to test all of the setup in one test. Instead I might want tests like <span style="font-family:courier new;">initialize_shouldSetupCampaignDropDownCorrectly()</span>, <span style="font-family:courier new;">initialize_shouldSetupDaypartingViewWithModelContents()</span>, etc. If I was mocking the view with a strict mock then every test would need to explicitly set expectations for all the calls which the controller will be making to the view, even if each individual test is only interested in a small subset of those calls. With liberal mocks that requirement is removed. I can essentially say 'this dependency is going to be used in a bunch of ways here, but I'm only concerned with these specific method calls'. The underlying motivation for this is to avoid <a href="http://xunitpatterns.com/Fragile%20Test.html">Fragile Tests</a>. If you're not using liberal mocks and one aspect of your expected behavior changes then suddenly <span style="font-style: italic;">all</span> your tests will fail, not just the test that specifies the behavior that's just changed. Fragile tests seem to be a common risk for new automated testing practitioners, and they can be really demoralizing.<br/><br/>
+
+Now, just because you <span style="font-style: italic;">can</span> doesn't always mean you <span style="font-style: italic;">should</span>. I've found that liberal mocks can be a bit of a crutch for a less-than-optimal design. If you find yourself needing to use a lot of liberal mocking then you should consider that to be a design smell. Maybe the method you're testing is doing too much work. If you can break your big method up into smaller methods that are testable then you're in a happier place, in terms of testing and more importantly in terms of design. Alternatively, the issue may be that the dependency which you're mocking out has some huge sprawling interface that should be <a href="http://www.refactoring.com/catalog/extractInterface.html">split into several pieces</a>. After doing that you may find that you only need to set expectations on one of those pieces, and the other parts can be replaced with a true Null Object.</div>

@@ -1,0 +1,100 @@
+---
+layout: post
+title: "Inspect the state of your running iOS app's UI with Symbiote"
+date: 2011-05-01T11:45:00-07:00
+comments: false
+---
+
+<div class='post'>
+<h2>What's Symbiote?</h2>
+<p><a href="https://github.com/moredip/Frank">Frank</a> comes with a useful little tool called Symbiote. It's a little web app which is embedded <i>inside</i> your native iOS application. Its purpose is to let you inspect the current state of your app's UI, and to test the UIQuery selectors which Frank uses to help it automate your app. Essentially Symbiote is Firebug for your native iOS app.</p>
+
+<p>Recently I've added some improvements to Symbiote, adding some new features and making it easier to use. <a href="http://vimeo.com/22644221">This screencast</a> demonstrates most of the new-and-improved Symbiote.</p>
+
+<iframe src="http://player.vimeo.com/video/22644221?title=0&amp;byline=0&amp;portrait=0" width="400" height="300" frameborder="0"></iframe>
+
+<h2>Main features</h2>
+<h3>View hierarchy</h3>
+<table><tr>
+<td>
+<div class="separator" style="clear: both; text-align: center;">
+<a href="http://3.bp.blogspot.com/-Mqo9tT-rSmo/Tb4FJdhN8oI/AAAAAAAAFyc/aoFGVvGSL94/s1600/view%2Bheirarchy.png" imageanchor="1" style="margin-left:1em; margin-right:1em"><img border="0" height="334" width="365" src="http://3.bp.blogspot.com/-Mqo9tT-rSmo/Tb4FJdhN8oI/AAAAAAAAFyc/aoFGVvGSL94/s400/view%2Bheirarchy.png" /></a></div>
+
+
+</td>
+<td>
+Symbiote provides you with a tree describing the current state of the view hierarchy of your running app. This gives you an overview of the general structure of your app's UI, and also helps you write UIQuery selectors which drill down from high level UI features to individual UI elements. For example, you might want to find a specific UITableView, and from there drill down to a specific row within that table view.
+</td>
+</tr></table>
+
+<h3>View properties</h3>
+<table><tr>
+<td>
+<div class="separator" style="clear: both; text-align: center;">
+<a href="http://3.bp.blogspot.com/-Bzy_Ygq7gnM/Tb4GgEHi7pI/AAAAAAAAFyk/IHeRWdTE1cI/s1600/view%2Bproperties.png" imageanchor="1" style="margin-left:1em; margin-right:1em"><img border="0" height="156" width="400" src="http://3.bp.blogspot.com/-Bzy_Ygq7gnM/Tb4GgEHi7pI/AAAAAAAAFyk/IHeRWdTE1cI/s400/view%2Bproperties.png" /></a></div>
+
+
+</td>
+<td>
+After selecting a specific view in the view hierarchy you can see details of that view in a properties tab. Inside this tab is a table describing all the properties exposed by the specific view.
+</td>
+</tr></table>
+
+<h3>UI Snapshot, with view locator</h3>
+
+<table><tr>
+<td>
+<div class="separator" style="clear: both; text-align: center;">
+<a href="http://2.bp.blogspot.com/-VvRIkyC_6xQ/Tb4HtjSTf2I/AAAAAAAAFys/T6sjsD5EKSw/s1600/UI%2Bsnapshot.png" imageanchor="1" style="margin-left:1em; margin-right:1em"><img border="0" height="246" width="400" src="http://2.bp.blogspot.com/-VvRIkyC_6xQ/Tb4HtjSTf2I/AAAAAAAAFys/T6sjsD5EKSw/s400/UI%2Bsnapshot.png" /></a></div>
+</td>
+<td>
+The View Locator tab shows a snapshot of the current app UI. As you mouse over views in the view hierarchy that view will be highlighted in the view locator, making it easy to visualize which 
+parts of the view tree map to which parts of the app's UI. 
+</td>
+</tr></table>
+
+
+<h3>Selector testing</h3>
+<table><tr>
+<td><div class="separator" style="clear: both; text-align: center;">
+<a href="http://3.bp.blogspot.com/-Qw5aDFr07x0/Tb4IRDAqeBI/AAAAAAAAFy0/vm-wsxHOXNg/s1600/selector%2Btesting.png" imageanchor="1" style="margin-left:1em; margin-right:1em"><img border="0" height="145" width="400" src="http://3.bp.blogspot.com/-Qw5aDFr07x0/Tb4IRDAqeBI/AAAAAAAAFy0/vm-wsxHOXNg/s400/selector%2Btesting.png" /></a></div>
+
+
+</td>
+<td>
+Frank uses UIQuery selectors during testing to select a specific view or set of views. This is very similar to how Selenium uses XPath or CSS selectors. In order to test these, Symbiote allows you to provide free-form UIQuery selectors and then have Frank flash any matching views in your app's live UI. This makes it a lot easier to test selectors when writing your automated tests.
+</td>
+</tr></table>
+
+<h3>Accessible elements</h3>
+<table><tr>
+<td>
+<div class="separator" style="clear: both; text-align: center;">
+<a href="http://4.bp.blogspot.com/-aCXhNBPGqsw/Tb4IuN4bauI/AAAAAAAAFy8/2_xE_EmNGJY/s1600/accessible%2Belements.png" imageanchor="1" style="margin-left:1em; margin-right:1em"><img border="0" height="264" width="400" src="http://4.bp.blogspot.com/-aCXhNBPGqsw/Tb4IuN4bauI/AAAAAAAAFy8/2_xE_EmNGJY/s400/accessible%2Belements.png" /></a></div>
+
+
+</td>
+<td>
+Frank makes use of accessibility labels to make it easier for it to find elements in the UI. To that end, Symbiote provides a list of all the views in your current UI which have accessibility labels. You can click on these elements and see the corresponding UI element flash in your app's running UI, using the same mechanism as the free-from selector input field.
+</td>
+</tr></table>
+
+<h2>Cool, where do I get it?</h2>
+
+That's easy. Just <a href="http://blog.thepete.net/2011/04/tutoral-creencast-on-frankifying-your.html">get your app Frankified</a>, and you're good to go!
+
+<h2>Gracias!</h2>
+We wouldn't have what we have today without the original UI cleanup of Symbiote by Cory Smith, and the UX and CSS help of Mike Long.</div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>Pete Hodgson</div>
+<div class='content'>
+@Anonymous, the latest code in the Frank repo now contains the Symbiote enhancements I described here. Ask away on the Frank mailing list if you need more details - http://groups.google.com/group/frank-discuss</div>
+</div>
+<div class='comment'>
+<div class='author'>Anonymous</div>
+<div class='content'>
+Where do we download the Symbiote 3.0 upgrade? This does not seem to be available from github.</div>
+</div>
+</div>

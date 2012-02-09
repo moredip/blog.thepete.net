@@ -1,0 +1,23 @@
+---
+layout: post
+title: "retroactive quality metrics with git"
+date: 2011-05-08T09:57:00-07:00
+comments: false
+---
+
+<div class='post'>
+<h2>The Background</h2>
+<p>For a recent project retrospective we wanted to chart some metrics over the course of the entire project. Things like number of unit tests, test coverage, how long builds took to run, number of failing tests, etc. Taken in isolation these metrics aren't incredibly exciting, but when you plot them over time and hold that against other metrics like team morale, story point velocity, open defects, etc then often some interesting correlations can emerge.</p>
+
+<h2>The Challenge</h2>
+<p>So, we wanted metrics for internal quality, but we actually hadn't done the best job at collecting those metrics, particularly at the start of the project. So under pressure to get ready for our project retro we decided that we'd have to pass on graphing the internal quality metrics.
+</p>
+<p>
+After the retrospective - which was a very valuable exercise regardless - I decided to figure out a way to capture this kind of data retroactively. I reasoned that if we had a script which generated a metric for the codebase at an instance in time then we can easily leverage The Awesome Power Of Git&trade; to collect that same metric over an entire set of commits.
+</p>
+
+<h2>Find someone else who's solved 80% of your problem</h2>
+I came across a script in <a href="http://blog.extracheese.org/">Gary Bernhardt</a>'s dotfiles repo on github called <a href="https://github.com/garybernhardt/dotfiles/blob/master/bin/run-command-on-git-revisions">run-command-on-git-revisions</a>. Sounds promising, doesn't it? This script will take a given range of git commits and run whatever command you provide on each commit in the range one by one. Just what I needed.
+
+<h2>Solve the remaining 20%</h2>
+I just needed a few additional tweaks. First I created a little 5 line ruby script which ran some test coverage metrics on our codebase, outputting a single line of comma-separated data. Then I created a <a href="https://gist.github.com/961178">modified version of Gary's script</a>. The modified script only outputted raw CSV data, and tacked on the timestamp of each git commit as it processed it. Once that was done all I had to do was kick off the script with the appropriate range of commits, asking it to run my metric reporter script on each commit. I took the output and pulled it into graphing software and now have a pretty graph of how our test code has trended over time.</div>

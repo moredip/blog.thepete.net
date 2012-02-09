@@ -1,0 +1,25 @@
+---
+layout: post
+title: "How much code did I just delete?"
+date: 2009-11-17T15:33:00-08:00
+comments: false
+categories:
+ - git
+---
+
+<div class='post'>
+Today I had the great pleasure of deleting a huge chunk of old code from my application. Using git it's surprisingly easy to figure out exactly how much code:
+
+<pre> 
+git checkout -b deletion_task
+
+# ... delete lots of code...
+# ... time passes...
+
+git add -i
+git commit
+git co master
+FILES_DELETED=`git diff --summary master deletion_task | grep "^ delete" | wc -l`
+LINES_DELETED=`git diff --summary master deletion_task | grep "^ delete" | awk '{ print $4 }' | xargs cat | wc -l`
+echo -e "$FILES_DELETED files deleted.\n$LINES_DELETED lines deleted."
+</pre></div>

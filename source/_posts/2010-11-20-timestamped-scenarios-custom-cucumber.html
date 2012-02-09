@@ -1,0 +1,43 @@
+---
+layout: post
+title: "timestamped-scenarios, a custom Cucumber formatter"
+date: 2010-11-20T14:39:00-08:00
+comments: false
+---
+
+<div class='post'>
+I just published a new Ruby gem called <a href="https://rubygems.org/gems/timestamped-scenarios">timestamped-scenarios</a>. As usual the code is also <a href="https://github.com/moredip/timestamped-scenarios">available on github</a>.<br />
+<br />
+<h2>What's this gem for?</h2><p>This gem provides custom cucumber formatters which append a test run timestamp to each scenario name as it is generated. a Timestamped::PrettyFormatter and Timestamped::HtmlFormatter are supplied already, but you can use the AddsTimestamp module to dynamically add timestamping to pretty much any Cucumber formatter.</p><br />
+<p>You might wonder why I created these formatters. I'm currently working on an iOS project where we are using <a href="https://github.com/moredip/Frank">Frank</a> and Cucumber to run automated acceptance tests against the application. We have integrated these acceptance tests into our CI build, and as part of that integration we record a screen capture movie of each test run. By adding timestamps to each scenario name we can easily skip to the part of the movie which shows that scenario executing. This is useful when trying to figure out the context around why a <br />
+specific scenario failed. </p><br />
+<h2>How do you use it?</h2><p>As with my other cucumber formatter gem (<a href="https://rubygems.org/gems/slowhandcuke">slowhandcuke</a>), getting set up with timestamped-scenarios is super easy. just install the gem with <br />
+<pre><code>gem install timestamped-scenarios</code></pre>and you're ready to use them by executing cucumber with something like <br />
+<pre><code>cucumber --format 'Timestamped::HtmlFormatter' --out cucumber.html</code></pre>You can also add these parameters to your rake cucumber task, or to your cucumber.yml config file. There's also <a href="https://github.com/moredip/timestamped-scenarios/tree/master/example/">a little sample project</a> in the timestamped-scenarios repo on github which shows how to use the formatters.</p><br />
+<h2>What's it look like?</h2><p>Here's an example of what the Timestamped::PrettyFormatter output looks like:<br />
+<pre><code>
+∴  cucumber 
+Using the default profile...
+Feature: demonstration
+
+  Scenario: The First [0:00]      # the.feature:3
+    Given I wait 5 seconds # step_definitions/steps.rb:1
+
+  Scenario: The Second [0:05]       # the.feature:6
+    Given I wait 0.7 seconds # step_definitions/steps.rb:1
+    Given I wait 3 seconds   # step_definitions/steps.rb:1
+
+  Scenario: The Third [0:09] # the.feature:10
+
+3 scenarios (3 passed)
+3 steps (3 passed)
+0m8.709s
+</code></pre></p></div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>kasthor</div>
+<div class='content'>
+Thanks for this article... right to the point<br /><br />i don&#39;t know if it&#39;s a matter of versioning<br /><br />but right now the command is &#39;rake release&#39; instead of &#39;rake publish&#39;</div>
+</div>
+</div>

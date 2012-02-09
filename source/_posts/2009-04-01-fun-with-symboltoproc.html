@@ -1,0 +1,59 @@
+---
+layout: post
+title: "fun with Symbol#to_proc"
+date: 2009-04-01T09:32:00-07:00
+comments: false
+categories:
+ - ruby
+---
+
+<div class='post'>
+As I start to get fluent in ruby I often find myself using a more functional programming style, particularly when dealing with collections. That generally leads to lots of little block-centric operations. I recently discovered a really elegant trick to make that code a little nicer.<br/><br/>
+
+Let's say there's a Person class:
+
+<pre class="brush: ruby; gutter: false">
+class Person
+    attr_accessor :first_name, :last_name, :age
+end
+</pre>
+and I have a collection of people which I'd like to sort by age. An obvious approach would be:
+
+<pre class="brush: ruby; gutter: false">
+people.sort_by{ |person| person.age }
+</pre>
+
+That works, but it is a little wordy. This is ruby, after all! Wouldn't it be nice if we could write this instead:
+
+<pre class="brush: ruby; gutter: false">
+people.sort_by &amp;:age
+</pre>
+Isn't that neat? The magic that makes this work is this little <a href="http://en.wikipedia.org/wiki/Monkey_patch">monkey patch</a> to the Symbol class.
+
+<pre class="brush: ruby; gutter: false">
+class Symbol
+  def to_proc
+    Proc.new { |*args| args.shift.__send__(self, *args) }
+  end
+end
+</pre>
+
+Note that this is already done for you <a href="http://api.rubyonrails.org/classes/Symbol.html">in Rails</a> and <a href="http://facets.rubyforge.org/doc/api/core/classes/Symbol.html">in Facets</a> - in fact that's where I lifted this code from.<br/><br/>
+
+So how does this work? When we called sort_by we passed in the :age symbol, but we used the &amp; to indicate that it should be treated as a block. When you supply a method with a block which isn't a Proc instance ruby helpfully attempts to coerce it into a Proc by calling to_proc. Because of the Symbol monkey patch to_proc now returns a block which will invoke a method with the same name as the symbol itself on whatever object it is passed in. Phew. Re-read that last sentence 5 times. The end result is that the following two blocks are identical:
+
+<pre class="brush: ruby; gutter: false">
+block_a = :some_method.to_proc
+block_b = proc { |x| x.some_method }
+</pre>
+
+It follows that the following two operations are identical:
+
+<pre class="brush: ruby; gutter: false">
+people.sort_by{ |person| person.age }
+people.sort_by &amp;:age
+</pre>
+
+Voila! I should point out here that I'm not exactly the first person to discuss this great trick. See for messirs <a href="http://pragdave.pragprog.com/pragdave/2005/11/symbolto_proc.html">Thomas</a> and <a href="http://drnicwilliams.com/2006/09/28/new-magical-version-of-symbolto_proc/">Williams</a>.<br/><br/>
+
+In fact, it's such a common idiom that it will <a href="http://www.infoq.com/news/2008/02/to_proc-currying-ruby19">apparently</a> be baked right into ruby 1.9.</div>

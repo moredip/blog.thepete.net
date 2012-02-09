@@ -1,0 +1,43 @@
+---
+layout: post
+title: "Introducing Noguchi"
+date: 2010-04-05T11:41:00-07:00
+comments: false
+categories:
+ - ruby
+---
+
+<div class='post'>
+<p>Generating HTML tables in ruby has always seemed like more of a hassle than it should be. Most of the times that I've had to do it I've been a little frustrated with how, well, <i>ugly</i> the view code looks. So, I decided I'd try and create a nicer way to build tables. The end result is a small table creation library called Noguchi. Given a set of data and some optional configuration it will render a table as HTML or CSV.</p><h2>Show me!</h2><p>Here are some quick examples of the kind of things you can do with Noguchi. There are more features than I will show here; for more details check out the <a href='http://github.com/moredip/noguchi'>README in the library's github repo</a></p><h3>Creating a simple table from ActiveRecord model instances</h3><pre>table = Noguchi.table_for(users)
+table.render</pre><p>generates</p><table><thead>
+<tr><th>Name</th><th>Age</th><th>Sex</th></tr>
+</thead><tbody>
+<tr><td> Jenny</td><td>24</td><td>F</td></tr>
+<tr><td>Dave</td><td>32</td><td>M</td></tr>
+<tr><td>Hank</td><td>27</td><td>M</td></tr>
+</tbody></table><h3>Rendering CSV</h3><pre>table = Noguchi.table_for(users)
+table.render_as_csv</pre><p>generates</p><pre>name,age,sex
+Jenny,24,F
+Dave,32,M
+Hank,27,M</pre><h3>Rendering collections of hashes</h3><pre>fruits = [
+  { :name => 'banana', :color => 'yellow' },
+  { :name => 'apple', :color => 'green' },
+  { :name => 'orange', :color => 'orange' } 
+]
+table = Noguchi.table_for(fruits)</pre><p>generates</p><table><thead>
+<tr><th>name</th><th>color</th></tr>
+</thead>   <tbody>
+<tr><td>banana</td><td>yellow</td></tr>
+<tr><td>apple</td><td>green</td></tr>
+<tr><td>orange</td><td>orange</td></tr>
+</tbody> </table><h3>Adding arbitrary custom-rendered columns</h3><pre>table = Noguchi.table_for(users)
+table.add_field(:edit)
+table.to_render_body_cell_for(:edit) do |context,cell|
+  cell.raw_content = link_to( "Edit this user", edit_user_path(context.datum) )
+end</pre><p>generates</p><table>  <thead><tr><th>Name</th><th>Age</th><th>Sex</th><th>Edit</th></tr></thead>
+  <tbody> 
+    <tr><td>Jenny</td><td>24</td><td>F</td><td><a href='http://example.com/users/1/edit'>Edit this user</a></td></tr>
+    <tr><td>Dave</td><td>32</td><td>M</td><td><a href='http://example.com/users/2/edit'>Edit this user</a></td></tr>
+    <tr><td>Hank</td><td>27</td><td>M</td><td><a href='http://example.com/users/3/edit'>Edit this user</a></td></tr>
+  </tbody> 
+</table><h2>The approach</h2><p>I decided that since the goal of this library was to make table creation code look less ugly I would let the design of the API drive the process. So I started off by thinking about how I'd like table creation code to look like, basically just writing some rough ruby code that used the as-yet-unwritten library to render a basic table. The idea here was to get a simple core API which would render a basic table with very few lines of code, but to make the table rendering customizable by adding various tweaks to that basic table. Once I was happy with how the core API looked I started writing more complex examples, letting that drive out more advanced features in the API. These features were optional configurations which aimed to handle the most common kinds of customization I seem to end up doing to a table. Things like customizing a column header, adding an extra column to contain an edit link, things like that.</p><p>Once I had a rough idea of the API in my head, I started writing tests that described the functionality, implementing just enough of the library at each step to make the tests pass. I was plesantly surprised at how well this worked; the entire implementation was driven out by these tests. While I do tend to TDD most of the time, I've seldom done so exclusively. I tend to find myself spending some small amount of time outside of the Red-Green-Refactor loop, usually while exploring a new design approach or a brand new subsystem. I'm quite pleased with how this exclusively TDD approach played out in this case, although I wonder whether it would work quite as well in different circumstances.</p></div>

@@ -1,0 +1,150 @@
+---
+layout: post
+title: "mock.willExecute(...) in mock4as"
+date: 2009-04-02T09:44:00-07:00
+comments: false
+categories:
+ - flex
+---
+
+<div class='post'>
+As I mentioned in a <a href="http://blog.thepete.net/2009/03/liberal-mocks.html">previous post</a> I've recently been adding some features to <a href="http://code.google.com/p/mock4as/">mock4as</a>, a mocking library for ActionScript. In this post I'm going to talk about the new mock.willExecute(...) feature which I recently implemented.<br/><br/>
+
+Perhaps the easiest way to describe willExecute is as a dynamic version of willReturn, so before we dive into willExecute I should briefly explain willReturn. willReturn allows a user to specify what value a mocked out method should return when called. An example should shed some light:
+
+<pre class="brush: as3; gutter: false">
+var mock:MockInterface = new MockInterface();
+mock.expects('lookupBookTitleByISBN').withAnyArgs().willReturn('War and Peace');
+assertEquals( 'War and Peace', mock.lookupBookTitleByISBN() );
+</pre>
+
+You can see that when we call the method mock.lookupBookTitleByISBN() it returns 'War and Peace', because that's what we specified in our expectation. This is a fundamental feature that I would expect any mocking system to supply. It's the primary tool for controlling the indirect inputs into the system that your testing. That said, newcomers to mocking do sometimes get confused with this feature and think that willReturn is specifying what you <span style="font-style: italic;">expect</span> the method to return. That's not what we're doing here, we're <span style="font-style: italic;">instructing</span> the mock what to return. We're providing indirect input, not testing indirect output (the other main purpose of mocking). I suspect that adding a new method to mock4as which is similar mock.expects(...) but intended for use in cases where you just mocking the method to control indirect input would be helpful. Something like mock.ifCalled('foo').willReturn(someResult) might clear up some of the confusion between specifying an expectation that a method is called and injecting a return value for a method.<br/><br/>
+
+Anyway, back to the subject at hand. The willExecute feature takes the concept of willReturn and makes it dynamic. Rather than specifying a hard-coded value to be returned whenever the method is called you instead supply an arbitrary function which will be <span style="font-style: italic;">executed</span> whenever the specified method on the mock is called. For example:
+
+<pre class="brush: as3; gutter: false">
+var mock:MockInterface = new MockInterface();
+mock.expects('lookupBookTitleByISBN').willExecute(
+  function( isbn:String ):String{
+    return "Title for isbn " + isbn;
+  } );
+
+assertEquals( 'Title for isbn ABC', mock.lookupBookTitleByISBN('ABC') );
+assertEquals( 'Title for isbn XYZ', mock.lookupBookTitleByISBN('XYZ') );
+
+</pre>
+Every time lookupBookTitleByISBN(...) is called the mocking system looks up and executes the attached function, passing in the arguments supplied to lookupBookTitleByISBN(...). In addition it returns whatever value was returned by the attached function. Note from our example that this allows output to vary with the input, because we have supplied a function rather than a static value.<br/><br/>
+
+The real fun starts when we realize that functions in actionscript can act as <a href="http://martinfowler.com/bliki/Closure.html">closures</a>. This leads to a lot of interesting ways to use willExecute. To give one (rather contrived) example, we can use willExecute to specify some quite sophisticated ordering constraints:<br/><br/>
+
+<pre class="brush: as3; gutter: false">
+public function test_accountsAreSubmittedInAscendingNumericalOrder():void {
+  var mock:MockInterface = new MockInterface();
+
+  var lastAccountId:int = -1;
+  mock.expects('submitAccount').withAnyArgs().willExecute(
+    function(account:account):void {
+      assertTrue( account.id() >= lastAccountId );
+      lastAccountId = account.id();
+    }
+  );
+
+  exerciseSystemUnderTestUsing( mock );
+}
+
+</pre>
+Note here that we have used <span style="font-weight: bold;">variables outside of the closure's local scope</span> to maintain state across calls to the mocked method. Also note that we can call methods like assertTrue(...) from inside the attached function.<br/><br/>
+
+Some other potential uses of this feature include:<br/><br/>
+
+<span style="font-weight: bold;">Verifying arguments passed to a method where the argument is complex:</span>
+Let's say a method takes a <a href="http://www.refactoring.com/catalog/introduceParameterObject.html">Parameter Object</a> which is an instance of a class with 10 properties, but we're only interested in three:<br/><br/>
+
+<pre class="brush: as3; gutter: false">
+public function testXYZCoordinatesAreAllSetToZero():void
+{
+  var mock:MockSomeInterface = new MockSomeInterface();
+
+  mock.expects('methodWithScaryParams').withAnyArgs().willExecute(
+    function(bigObject:ComplexParameterObject):void{
+      assertEquals( 0, bigObject.coordX );
+      assertEquals( 0, bigObject.coordY );
+      assertEquals( 0, bigObject.coordZ );
+    }
+  );
+
+  exerciseSystemUnderTestUsing(mock);
+}
+
+</pre>
+<span style="font-weight: bold;">Verifying arguments passed to a method with a lot of parameters but where we're only interested in some of the arguments:</span>
+
+<pre class="brush: as3; gutter: false">
+public function testNameAndAddressAreNotEmpty():void
+{
+  var mock:MockSomeInterface = new MockSomeInterface();
+
+  mock.expects('methodWithManyParams').withAnyArgs().willExecute(
+    function(boring:String,uninteresting:XML,name:String,address:String,dontCare:Function):void{
+      assertNotEquals( "", name );
+      assertNotEquals( "", address );
+    }
+  );
+
+  exerciseSystemUnderTestUsing(mock);
+}
+
+</pre>
+<span style="font-weight: bold;">Verifying some internal characteristics of an argument:</span>
+
+<pre class="brush: as3; gutter: false">
+public function testNameAndAddressAreNotEmpty():void
+{
+  var mock:MockSomeInterface = new MockSomeInterface();
+
+  mock.expects('someMethod').withAnyArgs().willExecute(
+     function(lotsOfXml:XML):void{
+      assertEquals( "Dave", lotsOfXml.body.person.firstName );
+      assertEquals( "Thomas", lotsOfXml.body.person.lastName );
+    }
+  );
+
+  exerciseSystemUnderTestUsing(mock);
+}
+
+</pre>
+It's interesting to note that willExecute can be used to accomplish two goals. You can use it to control the Indirect Input into the system you're testing (which is what willReturn is also used for, as I touched on above). In addition you can also use it to test the Indirect Outputs of your system. This is what's happening above when assertEquals(...), assertTrue(...) and the like are called from within the attached functions. My personal experience is that something like willExecute tends to be used more often as an ad hoc way of testing Indirect Output than as a way of supplying Indirect Input (which can most time be handled adequately using willReturn). Most of the time I use it to express non-trivial expectations on the input to a method. In a lot of frameworks the need to do this is reduced by the presence of custom argument matchers. These allow you to capture complex expectations on a method's input parameters by implementing classes which you then provide to your mock during the expection setting phase. For examples from other mocking frameworks you could look at <a href="http://www.jmock.org/custom-matchers.html">jMock</a> and <a href="http://mockito.googlecode.com/svn/branches/1.7/javadoc/org/mockito/Matchers.html">Mockito</a>.<br/><br/>
+
+Finally, you may remember I started off describing willExecute above is as a dynamic version of willReturn. In fact, willReturn could be trivially implemented using willExecute:<br/><br/>
+
+<pre class="brush: as3; gutter: false">
+public function willReturn(object:Object):void{
+  willExecute( function():Object{ return object; } );
+}
+
+</pre>
+The same is true of the willThrow() feature (which allows a user to ask a mock to throw a specific exception when a method is called).<br/><br/>
+
+<pre class="brush: as3; gutter: false">
+public function willThrow(error:Error):void{
+  willExecute( function():void{ throw error; } );
+}
+</pre></div>
+<h2>Comments</h2>
+<div class='comments'>
+<div class='comment'>
+<div class='author'>Kris</div>
+<div class='content'>
+Check out mockito for flex <br />http://bitbucket.org/loomis/mockito-flex</div>
+</div>
+<div class='comment'>
+<div class='author'>Pete Hodgson</div>
+<div class='content'>
+Alex, unfortunately your email wasn't attached to your comment, as far as I can tell. Shoot me an email - public@thepete.net.</div>
+</div>
+<div class='comment'>
+<div class='author'>AlexU</div>
+<div class='content'>
+great addition. BTW: I'm looking to contact you guys at mock4as for some collaboration around your project but can't find any contact methods other than these commentaries. Possible if you reply on this comment via my email that will hopefully be attached to this comment?</div>
+</div>
+</div>

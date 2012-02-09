@@ -1,0 +1,121 @@
+---
+layout: post
+title: "Encapsulating user interaction events in Flex"
+date: 2010-02-19T00:20:00-08:00
+comments: false
+categories:
+ - flex
+---
+
+<div class='post'>
+<p>When developing the presentation layer in a Flex application I like to follow an MVC/MVP pattern. I also like to keep my views nice and skinny, with as much logic as possible in the controller/presenter. However, I do like to encapsulate <em>some</em> of the details of the UI itself within the view, and so I shy away from exposing raw user interaction events (button clicks, list selections, etc) outside of the view. Instead I like to have the view capture those events and translate them into what I call <em>user action</em> events, which represent higher-level, user-centric interactions. So instead of publishing a 'list item selected' event, the view publishes a 'blog post selected' event. For example, here what a typical event handler would look like in a view's MXML file:</p>
+
+<pre class="brush: as3; gutter: false">
+private function onListItemDoubleClick(event:ListEvent):void {
+  dispatchEvent( new Event(EVENT_postSelected) );
+}
+</pre>
+
+<p>This allows small user experience tweaks (e.g. double clicks to select vs single clicks) without affecting clients of the view. More importantly it helps the view expose a consistent, user-centric level of abstraction - its interface talks in terms of user actions, not UI minutia. A view's controller would register listeners for these user action events via the generic IEventDispatcher::addEventListener(...) exposed by the view, and process them appropriately in the registered listener callback:</p>
+
+<pre class="brush: as3; gutter: false">
+public class Controller
+{
+  //... 
+
+  public function bindToView(view:IView):void {
+    _view = view;
+    //...
+    _view.addEventListener( View.EVENT_postSelected, onPostSelected );
+  }
+  
+  //...
+
+  private function onPostSelected(event:Event):void {
+    //... process user action here
+    //...
+  }
+}
+</pre>
+
+<p>One thing to note in passing (we'll come back to it) is the ugly fact that while bindToView(...) is dealing with an abstract interface (IView), it still needs to reference the <b>concrete View implementation</b> in order to get to the View.EVENT_postSelected constant. In real terms the controller class has a dependency on the concrete view implementation.</p>
+
+<p>Back to the story. I want to make sure that my controller processes these user actions correctly, which for me means I need good unit test coverage of the listener callbacks which the controller registers. These callbacks are private methods, so therefore I need some way of simulating the occurrence of these user actions within the unit tests for my controller. Typically when unit testing a controller I arrange for it to be bound to a stub implementation of the view. To simulate these user actions I could have that stub implementation derive from EventDispatcher. During test setup the controller would be bound to the stub view, and as part of that process would subscribe to these user action events. Subsequently my test code could artificially fire the appropriate event within a test case using EventDispatcher::dispatchEvent(...) in order to simulate a given user action occurring.</p>
+
+<pre class="brush: as3; gutter: false">
+public class StubView extends EventDispatcher implements IView
+{
+  // other stub stuff here
+}
+
+public class ControllerTests 
+{
+
+  [Before]
+  public function setUp():void {
+    // instantiate controller, instantiate stub view, bind controller to stub view, etc...
+  }
+
+  [Test]
+  public function doesSomethingWhenPostSelected():void {
+    // ... set up test
+    simulatePostSelected();
+    // ... verify expectations
+  }
+
+  // .. other tests
+
+  private function simulatePostSelected():void {
+    _stubView.dispatchEvent( new Event( View.EVENT_postSelected ) );
+  }
+}
+</pre>
+
+<p>This has always felt a little hacky to me, and I started to wonder if that feeling indicated a design flaw (I find that when something feels wrong when writing tests it often points towards a design deficiency). So recently I started experimenting with another approach. Instead of the controller registering event callbacks on the view directly with addEventListener(...), the view exposes methods which do the registration on the controller's behalf. I call these <i>interest registration methods</i>. Instead of the controller calling view.addEventListener( SOME_EVENT_TYPE, my_callback ), it calls view.addUserActionListener( my_callback ).</p>
+
+<pre class="brush: as3; gutter: false">
+ // ... in the view MXML
+ // ...
+ public function addPostSelectedListener(listener:Function):void {
+   addEventListener( EVENT_postSelected, listener );
+  }
+
+// ... in the controller
+// ...
+  public function bindToView(view:IView):void {
+    _view = view;
+  //...
+    _view.addPostSelectedListener( onPostSelected );
+  }
+</pre>
+
+<p>In production code the view <em>implements</em> these interest registration methods in the same way as the controller did before - by calling addEventListener(...) with the appropriate event type and the callback supplied by the caller. The code is the same, it's just moved from the controller to the view.</p>
+
+<p>The effect this has is quite powerful however. The fact that events are used as the mechanism for invoking the callback is hidden within the view. This becomes interesting when you come to test your controller. Instead of subscribing to events, your stub implementation of the view can implement the interest registration methods by just holding the callback in a instance variable. When the test wants to simulate a user action it can ask the view for the registered callback and call it directly, <em>bypassing the Flex eventing mechanism entirely</em>.</p>
+
+<pre class="brush: as3; gutter: false">
+public class StubView implements IView
+{
+  public var postSelectedListener:Function;
+  public function addPostSelectedListener(listener:Function):void {
+    postSelectedListener = listener;
+  }
+
+   // .. the rest of IView implemented here
+}
+
+public class ControllerTests
+{
+  // ... every thing else as before
+
+  private function simulatePostSelected():void {
+    _stubView.postSelectedListener( new Event( 'ignored' ) );
+  }
+}
+</pre>
+
+<p>What's more interesting is the effect this change has on the interface exposed by the view. Previously we had a view which exposed implementation details - the fact it was handling client callback registration using EventDispatcher), and most tellingly the string constants which identify different event types. We also had different levels of abstraction being exposed in the same interface. Typically the other parts of the view interface worked on the high level of user actions, not on the low level of events being fired of a particular type. With the migration to the interest registration methods we have a consistent level of abstraction, and we can hide all the messy implementation details of the eventing mechanism. Those annoying public event type strings become private and hidden away within the view; an implementation detail. We can even totally encapsulate the fact that the view inherits from EventDispatcher. The explicit interface also feels more typesafe to me. It's impossible to accidentally register for an invalid event code, and it's immediately obvious from the view's interface which user actions it reports.</p>
+
+<p>There are some drawbacks to this approach. Because we're abstracting away the details of the event dispatching mechanism we're also hiding some of the advanced facilities that mechanism provides. For example the approach as described doesn't allow a client of the view to unregister its interest, which would usually be accomplished using IEventDispatcher#removeEventListener(...). I would argue that this is a reasonable price to pay. If that functionality is required in some situations it would be straightforward to add, and because it would be explicitly added as a new method in the view's interface it would be clear that the view was expecting clients to use that method.</p>
+
+<p>All in all I'm very happy with how this experiment turned out. By paying attention to the 'smells' that my tests were exposing I discovered a valid issue with the way different parts of my code interacted. I would argue that changing that interaction to make the tests cleaner does seem to have lead to a cleaner design overall.</p></div>
