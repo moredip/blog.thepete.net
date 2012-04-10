@@ -15,21 +15,3 @@ Our team members have a lot of experience using <a href="http://cukes.info">Cucu
 <p>The last drawback worth mentioning around using the iOS simulator is that it can only be run under OS X, and it doesn&rsquo;t seem possible to run multiple instances of the simulator at once. This means that parallelizing your tests will involve running multiple OS X host machines, either physical boxes (we have used mac minis successfully) or virtual machines.</p><br />
 <h2 id="recommendations">Recommendations</h2><p>All in all I would still recommend a testing approach similar to what I&rsquo;ve outlined. The extra safety-net that our suite of functional tests provided was just as valuable as in a non-mobile project. While they are not totally polished, iWebDriver and Cucumber are the best way I know of currently to build that safety net.</p><br />
 <p>One thing we didn&rsquo;t do which I would recommend is to also have your test suite execute against a desktop webkit-based browser, using ChromeDriver for example. Tests will run a lot quicker on that platform, giving you faster feedback. You will likely need to make minor modifications to the way your tests are written, but if you&rsquo;re running tests in ChromeDriver from day one then you should be able to tackle any small issues as and when they arise. That said, I would <em>absolutely</em> make sure you are also running your full test suite against at least one mobile platform as frequently as you can - there will be issues in mobile webkit browsers that aren&rsquo;t apparent on a desktop browser.</p></div>
-<h2>Comments</h2>
-<div class='comments'>
-<div class='comment'>
-<div class='author'>dforkosh</div>
-<div class='content'>
-Was anyone else able to work around the mobile alert issue with ios? I am still getting a faded screen on the emulator after calling a window.alert().</div>
-</div>
-<div class='comment'>
-<div class='author'>Srinivasan Raguraman</div>
-<div class='content'>
-if you want to have faster runtime for the android web browser, try running against the x86 port of android. http://www.android-x86.org/<br /><br />Its faster, and more close enough to most cases to the android device browser.</div>
-</div>
-<div class='comment'>
-<div class='author'>jarib</div>
-<div class='content'>
-Hi,<br /><br />Nice post!<br /><br />Sorry about the slow response to your bug report for the CocoaHTTPServer - I&#39;ve added a Ruby side workaround which should be out with the next release (2.6.0 - should be out in a few days).</div>
-</div>
-</div>

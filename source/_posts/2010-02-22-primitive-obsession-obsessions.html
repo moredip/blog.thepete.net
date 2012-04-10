@@ -84,21 +84,3 @@ type WeekSpan uint;
 </pre>
 
 <p>This might be the best of both worlds. You get the explicit typing and attendant type safety, without the potential overkill of creating an new single-field class. If you later discovered that budding off a new class was required it would be trivial to refactor that semi-primitive WeekSpan type into a full fledged WeekSpan class.</p></div>
-<h2>Comments</h2>
-<div class='comments'>
-<div class='comment'>
-<div class='author'>Stephen Turner</div>
-<div class='content'>
-It&#39;s a while since I&#39;ve written any C or C++ either, but yes, that sounds familiar now you mention it. In which case it doesn&#39;t really solve the problem, does it?</div>
-</div>
-<div class='comment'>
-<div class='author'>Pete Hodgson</div>
-<div class='content'>
-I was under the impression that the compiler doesn&#39;t enforce type-safety on those typedefs though. For example, the following would compile:<br /><br />typedef int DaySpan;<br />typedef int WeekSpan;<br /><br />DaySpan getRequestedPeriod();<br /><br />void increaseRentalPeriod( WeekSpan period );<br /><br />void someFunction() {<br />  increaseRentalPeriod(<br />    getRequestedPeriod() <br />  );<br />}<br /><br /><br />I could well be wrong on that though; it&#39;s been a while since I wrote any C++!</div>
-</div>
-<div class='comment'>
-<div class='author'>s.r.e.turner</div>
-<div class='content'>
-Even C and C++ have typedef. It&#39;s also useful for giving aliases to complex container types without declaring a whole new class:<br />  typedef Map&lt;List&lt;Foo&gt;, List&lt;Bar&gt;&gt; MyListListMap;</div>
-</div>
-</div>

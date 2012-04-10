@@ -21,26 +21,3 @@ categories:
 
 <p>In conclusion, while I find myself sometimes taking advantage of this powerful feature of git, I always feel a little nervous doing so, and try and take extra care.
 </p></div>
-<h2>Comments</h2>
-<div class='comments'>
-<div class='comment'>
-<div class='author'>Rob</div>
-<div class='content'>
-&quot;Option number 3 would be to have a CI pipeline such that you don&#39;t ever commit changes to a branch that others can touch until the CI system has had a chance to run tests against your commit. Instead, you would always be commiting changes to a private branch. The CI system would detect your commit, run a build, and then merge your changes into a shared branch if and only if your commit passed muster. I don&#39;t think this would prevent commits in the middle of a batch of commits being pushed to your private branch from bein un-tested, but it would prevent the system ever getting into a state where the shared head is untested. &quot;<br /><br />This sounds a lot like the Android workflow using Gerrit.<br /><br />http://source.android.com/source/life-of-a-patch.html</div>
-</div>
-<div class='comment'>
-<div class='author'>eijk</div>
-<div class='content'>
-Won&#39;t &#39;git stash save --keep-index&#39; let you test your staged version before commit?</div>
-</div>
-<div class='comment'>
-<div class='author'>Jeff</div>
-<div class='content'>
-I actually enjoy that my SCCS (I use Perforce) makes me focus on one fix at a time.  <br /><br />This helps keep me in focus on what I had intended to do, without getting stymied on stuff like &quot;Oh!  Well, I&#39;ll make that a proper Singleton implementation while I&#39;ve got the code opened&quot; or &quot;God, those really need to be changed to const&quot;.  It&#39;s those little things that can really eat away at my dev cycles in any given day without my realizing it; how many times have you set out to fix a meaty P1 bug and then next thing you know, you&#39;ve fixed a half-dozen minor code issues without touching what you had originally set out to fix... and now it&#39;s time to turn in for the evening?<br /><br />Or worse, you get halfway into your primary coding objective, then get sidetracked and make 5 or 6 minor code fixes, and as it&#39;s getting near time to check your work in and go home, you&#39;ve introduced a new crash somewhere.  Now you have at least 6 smoking guns to track down.  I admit I&#39;ve been here before and had to say &quot;screw it!&quot; and backed out all of my changes and simply started over, keeping focus on my primary objective -- which always goes more smoothly the second time around.<br /><br />I like atomic checkins:  Take a coding task that you estimate to be a day&#39;s worth of work, make it happen, and check it in at the end of the day.  No gratuitous fixes, no partial checkins.  And as a bonus, it teaches you to be better at estimating how long dev tasks will take, a skill that most developers need honed from time to time.<br /><br />-Jeff</div>
-</div>
-<div class='comment'>
-<div class='author'>Stephen Turner</div>
-<div class='content'>
-Option 3 is similar to what we do at work (we use Mercurial). We have a staging tree which is only used by our immediate team. We push from our local repositories to the staging tree, run tests against that, and then push to the tree that the rest of the company uses. It doesn&#39;t stop bad changes propagating to the rest of our immediate team, but they&#39;re quickly cleared up. Of course, there&#39;s nothing to stop you taking this to the logical limit and having a personal staging tree in your own filespace.<br /><br />If you only do this occasionally, another option is to make a second clone of the shared tree if you want to make an independent change, and push both clones to the shared tree.</div>
-</div>
-</div>
