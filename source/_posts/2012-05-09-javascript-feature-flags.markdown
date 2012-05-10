@@ -13,36 +13,45 @@ Features Flags (aka feature bits, feature toggles) are a technique where you exp
 #Feature Flagging with query strings and css
 On a recent project we were releasing to production quite frequently and our team needed to hide new UI features which would take longer to develop than single release cycle. We decided we were happy to hide these features client-side using CSS. To toggle the features on and off we used query strings and some simple javascript.
 
-## the javascript
+## Step 1: extracting feature flags in the query string
 ``` javascript
-global.tta ||= {}
+function parseQueryParamPart(part){
+  var keyAndValue = part.split("=");
+  return {
+    key: unescape(keyAndValue[0]),
+    value: unescape(keyAndValue[1])
+  };
+}
 
-splitParam = (param) ->
-  result = {}
-  tmp = param.split("=");
-  result[tmp[0]] = unescape(tmp[1]);
-  result
+// returns an array of {key:"",value:""} objects
+function getQueryParamKeyValuePairs(searchSection){
+  var params = searchSection.slice(1).split("&");
+  return _.map( params, parseQueryParamPart );
+}
 
-getQueryParameters = ->
-  if window.location.search
-    # split up the query string and store in an associative array
-    params = window.location.search.slice(1).split("&");
-    (splitParam param for param in params)
+function getFeatureFlags(){
+  var queryParamKeyValuePairs = getQueryParamKeyValuePairs( window.location.search );
 
-getFeatureFlags = ->
-  featureFlags = _.filter getQueryParameters(), (param)-> !!param.ff
-  flags = _.pluck featureFlags, 'ff'
-  _.map flags, (flag) -> "ff-#{flag}"
-
-global.tta.getFeatureFlags = getFeatureFlags
+  return _.compact( _.map( queryParamKeyValuePairs, function(pair){
+    if( pair.key === 'ff' )
+      return pair.value;
+    else
+      return undefined;
+    end
+  }));
+}
 ```
+Here we do some simple parsing of search part of the window.location, with the help of underscore.js. We find all query params that have a key of 'ff' and return the values in an array. Note that query params may have multiple identical keys; we handle that by passing around the parsed key-value pairs as an array of pairs, rather than the naive approach of creating a hash table directly from the query string.
 
+## Step 2: set feature flags as classes in the DOM
 
-
-
-
-
-
+``` javascript
+$(function(){
+  _.each( getFeatureFlags(), function(featureFlag){
+    $('html').addClass( "ff-" + featureFlag );
+  });
+});
+```
 
 
 Exposing a feature flag gives you a simple way to control which new parts of your code are exposed within your application, without the need for branching. If you don't know whether everything needed for a new feature will be complete before your next release you can put that feature behind a flag. At the point that you are releasing your software you can toggle the functionality off if it is not complete. Likewise, if you're not sure whether a new service you are using will be available in your next release you can expose a toggle which configures whether your app uses the new service or an existing service. If the service is available and stable by the time you release then you toggle it on, otherwise you simply toggle it off. Without feature flags you would usually use source control to allow you to defer your decision making, creating long-lived feature branches your to do branch-by-abstraction in your codebase, and
