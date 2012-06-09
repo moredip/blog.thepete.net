@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 
-Software designs doen't pop into existance fully formed. The evolve over time. In this post I'm going to show how a concept can grow from a lowly method parameter to an all-growed-up Domain Object.
+Software designs don't pop into existance fully formed. They evolve over time. In this post I'm going to show how a concept can grow from a simple method parameter to an all-growed-up Domain Object.
 
 ## Initial requirements
 
@@ -20,14 +20,14 @@ post '/bug_report' do
 end
 ```
 
-So far so good. BugFiler is some service code that takes a bug description string and makes the appropriate service call to create a bug with that description in our bug tracking system.
+So far so good. We'll assume that `BugFiler` is some service code that takes a bug description string and makes the appropriate service call to create a bug with that description in our bug tracking system. We won't be focussing on the implementation of that class here, we'll just be a client of it.
 
-So the concept here is that of a **Bug**. So far it is represented by a string primitive and that's OK because that's all we need right now. Some java programmers would leap to their IDE keyboard shortcuts at this point and fix this Primitive Obsession code smell by refactoring this string primitive into a Bug type. But we're ruby programmers. We're pragmatttic. YAGNI.
+So a concept that's starting to surface here is that of a **Bug**. So far it is represented by a string primitive and that's OK because that's all we need right now. Some java programmers would leap to their IDE keyboard shortcuts at this point and fix this Primitive Obsession code smell by refactoring this string primitive into a Bug type. But we're ruby programmers, so we won't do that. We're pragmatic. YAGNI.
 
 
 ## New requirements
 
-Now our product guys have realized it'd be nice to know who is submitting these bug reports. They'd like use to track the name of the person filing the report. OK.
+Now our product guys have realized that it'd be nice to know who is submitting these bug reports. They'd like us to record the name of the person filing the report. OK, we can do that.
 
 
 ``` ruby
@@ -39,7 +39,9 @@ post '/bug_report' do
 end
 ```
 
-You can assume that we also modified `BugFiler#report_bug` to take that second arg. So now we're good. New requirements are satisfied and we can move on to our next task.
+You can assume that we also modified `BugFiler#report_bug` to take that second arg. 
+
+So now we're good. New requirements are satisfied and we can move on to our next task.
 
 
 ## More new requirements
@@ -119,7 +121,7 @@ end
 
 ## Replacing Primitive Obsession with a Struct
 
-Now at this point I think we have too much logic in our controller code. It feels like we the beginnings of a domain object here. We don't want to disturb too much code as we initially introduce this new object, so we'll just replace the primitive hash we currently have with a Struct.
+Now at this point I think we have too much logic in our controller code. It feels like we have the beginnings of a domain object here. We don't want to disturb too much code as we initially introduce this new object, so we'll just replace the primitive hash we currently have with a Struct.
 
 
 ``` ruby
@@ -173,7 +175,7 @@ end
 
 This is one of my favorite ruby tricks. We define the class `Bug` which inherits from a dynamically created Struct class, and then we add in some extra behavior. This way we don't have to write boring initialize methods or attr_accessor code in our class definition, and our intent is clearly captured by the use of Struct.
 
-# Solidifying our Domain Object
+## Solidifying our Domain Object
 
 Now that we have a `Bug`, why don't we allow it to file itself?
 
@@ -205,4 +207,20 @@ end
 
 That seems quite nice. We have some controller logic which doesn't do much apart from transform params into an object and then call methods on that object.
 
+# Our end state
+
 At this point we have the beginnings of a real Domain Object in our `Bug` class. In the future we could add the ability to serialize a Bug instance to a flat file or a database, and not really need to touch our controller code. We can also test all of the business logic without needing to thing about HTTP mocking, `Rack::Test`, or anything like that.
+
+I've noticed that domain concepts follow evolutionary paths like this quite frequently. In this case our path was:
+
+- a single parameter 
+- a group of parameters 
+- a hash object
+- a hash object plus some unattached logic
+- a value object plus some unattached logic
+- a domain object with attached logic
+
+
+# YAGNI!
+
+Something I tried to get across as we worked through this scenario was the importance of taking YAGNI approach to software design. It is very tempting to start introducing domain objects as soon as you see a potential for them, and it's fun to do so. But a lot of the time you don't ever need to go this far down the path towards a real domain object. If you don't need to attach any behaviour then a lot of times a simple hash is just fine.
