@@ -6,16 +6,20 @@ comments: true
 categories: 
 ---
 
-#Introduction
+On a recent project we were applying Continous Delivery practices and were releasing to production reasonably frequently - sometimes multiple times a week. We didn't want to expose features which were under active development in our production environment but we also wanted to avoid feature branches. I'm going to describe the simple approach we used to solve this problem using *feature flagging* with javascript and CSS.
 
-Features Flagging (aka feature bits, feature toggles) is a very useful pattern where you expose switches in your application which configure whether certain behavior is enabled or disabled. Typically your would use this pattern for functionality which is under active development and is not 'fully baked'. 
+# What are feature flags?
+
+Features flags (aka feature bits, feature toggles) are a very useful technique for managing latent functionality within your application. You expose switches in your application which configure whether certain behavior is enabled or disabled. Typically your would use this pattern for functionality which is under active development and is not 'fully baked'. 
 
 There are various classes of behavior which you might expose toggles for. Common use cases include hiding user-facing features which are still in development, or switching whether your code uses a new version of a third-party service. This allows you to do branch-by-abstraction and therefore avoid long-lived feature branches which can often be the source of considerable pain to a development team.
 
-For a more in-depth discussion on this pattern, Martin Fowler has a [nice writeup](http://martinfowler.com/bliki/FeatureToggle.html). My former colleague Erik Sowa also has [a nice presentation](http://www.infoq.com/presentations/Feature-Bits) describing how we applied 'feature bits' at a previous company I worked in.
+## Further reading
+
+For a more in-depth discussion on this pattern, Martin Fowler has a [nice writeup](http://martinfowler.com/bliki/FeatureToggle.html). My former colleague Erik Sowa also has [a nice presentation](http://www.infoq.com/presentations/Feature-Bits) describing how we applied 'feature bits' at a previous company I worked in. Derek Hammer has a [really nice write up](http://www.derekhammer.com/2012/03/24/patterns-to-isolate-code-in-continuous-delivery.html) on the broader range of patterns available for isolating code when practicing Continous Delivery.
 
 #Feature flagging using query strings, javascript and css
-On a recent project we were releasing to production quite frequently. Our team were using feature-flagging to hide new UI features whose development took longer than a single release cycle. The approach we decided upon was to hide these half-baked UI features client-side using CSS. To toggle the features on and off we used query strings and some simple javascript.
+As mentioned above, I'll be describing a simple but effective feature flagging technique we used on a recent project.  Our team decided to use feature-flagging to hide new features at the UI level using CSS. The mechanism to toggle the features on and off involved query strings and some simple javascript.
 
 ## step 1: extracting feature flags from the query string
 First we needed some way to specify whether a feature flag was on or off. We used query params to do this. These query params were totally ignored by the server-side code. There were just there so that javascript on the client side could inspect them at page load.
