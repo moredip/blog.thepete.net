@@ -10,6 +10,8 @@ document_root  = "~/website.com/"
 rsync_delete   = true
 deploy_default = "rsync"
 
+s3_bucket      = "blog.thepete.net"
+
 # This will be configured for you when you run config_deploy
 deploy_branch  = "gh-pages"
 
@@ -205,6 +207,28 @@ end
 ##############
 # Deploying  #
 ##############
+
+desc "Deploy website via s3cmd"
+task :deploy_s3 do
+  puts "## Deploying website via s3cmd"
+  ok_failed system("s3cmd sync --acl-public --reduced-redundancy public/* s3://#{s3_bucket}/")
+end
+
+desc "add blogger-style permalinks"
+task :blogger_permalinks do
+  Dir["#{public_dir}/blog/20*/*/**/index.html"].each do |path|
+    if match = %r{.*/(\d\d\d\d)/(\d+)/(\d+)/(.*)/}.match(path)
+      year,month,day,slug = match.captures
+      blogger_link = File.join(public_dir,year,month,slug+".html")
+      puts "#{path} => #{blogger_link}"
+
+      FileUtils.mkdir_p( File.dirname(blogger_link) ) 
+      FileUtils.cp( path, blogger_link )
+    else
+      puts "SKIPPING #{path}"
+    end
+  end
+end
 
 desc "Default deploy task"
 task :deploy do
