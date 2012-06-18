@@ -211,7 +211,7 @@ end
 desc "Deploy website via s3cmd"
 task :deploy_s3 do
   puts "## Deploying website via s3cmd"
-  ok_failed system("s3cmd sync --acl-public --reduced-redundancy public/* s3://#{s3_bucket}/")
+  ok_failed system("s3cmd sync --acl-public --no-delete-removed --reduced-redundancy public/* s3://#{s3_bucket}/")
 end
 
 desc "add blogger-style permalinks"
