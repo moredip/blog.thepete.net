@@ -18,9 +18,8 @@ While I was at WWDC this year I took the opportunity to investigate ways to make
 
 A couple of days of post-WWDC hacking later, and I'm pleased to announce a new **zero-configuration** Frank setup. You can now create a Frankified version of your application *without touching your XCode project at all*, using a simple `frank build` command. Here's a screencast showing how it works.
 
-<font color='red'>TODO</font>
 
-
+<iframe src="http://player.vimeo.com/video/44224224" width="500" height="290" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>
 ## Benefits
 
 To my mind the biggest benefit is that this will help grow the community of Frank users by reducing the barrier to entry. It also means you no longer need to maintain a duplicate XCode target, and therefore no longer need to make sure that .m files included in one target are also included in the other.
