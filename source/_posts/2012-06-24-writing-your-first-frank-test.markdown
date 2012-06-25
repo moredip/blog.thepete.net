@@ -3,7 +3,6 @@ layout: post
 title: "writing your first Frank test"
 date: 2012-06-24 19:28
 comments: true
-published: false
 categories: 
 ---
 
@@ -11,7 +10,9 @@ You've heard about how awesome [Frank](http://www.testingwithfrank.com) is and y
 
 ## get the code for your app
 
-I'm guessing you'll already have the code for your own app, but if you'd like to follow along with the examples in this post you'll want to download the sample app I'm using. You'll find it on github [here](https://github.com/Frahaan/2012-Olympics-iOS--iPad-and-iPhone--source-code). Create a local clone of that repo with a simple `git clone https://github.com/Frahaan/2012-Olympics-iOS--iPad-and-iPhone--source-code.git`. Now open up the app in XCode and make sure you can run it in the simulator.
+I'm guessing you'll already have the code for your own app, but if you'd like to follow along with the examples in this post you'll want to download the sample app I'm using. You'll find it on github [here](https://github.com/Frahaan/2012-Olympics-iOS--iPad-and-iPhone--source-code). Create a local clone of that repo with `git clone https://github.com/Frahaan/2012-Olympics-iOS--iPad-and-iPhone--source-code.git`
+
+Now open up the app in XCode and make sure you can run it in the simulator.
 
 ## Frankify your app
 Open up a terminal, and cd into the project's root directory (the one with the app's `.xcodeproj` file in it). Now we can Frankify the app as follows:
@@ -30,7 +31,7 @@ Let's learn a bit more about selectors by experimenting with our example Olympic
 
 <img src="/images/post_images/2012-06-24_A.png"></img>
 
-Note that I have the actual iOS Simulator side-by-side with my web browser. That's useful when testing view selectors in Symbiote, because the main way of testing selectors is to flash the views in the simulator which match a selector. Let's try that now. Type `view marked:'Events'` into selector field at the top left of Symbiote in the web browser, and then hit the **Flash** button. You should see the Events button in the simulator flash. Congratulations, you are using Frank to manipulate specific parts of your iOS app.
+Note that I have the actual iOS Simulator side-by-side with my web browser. That's useful when testing view selectors in Symbiote, because the main way of testing selectors is to flash the views in the simulator which match a selector. Let's try that now. Type `view marked:'Events'` into the selector field at the top left of Symbiote in the web browser, and then hit the **Flash** button. You should see the Events button in the simulator flash. Congratulations, you are using Frank to manipulate specific parts of your iOS app.
 
 ## running our first cucumber test
 
@@ -46,7 +47,7 @@ This tells Frank the location of your Frankified app, relative to that env.rb fi
 
 All right, now that we know how to run cucumber tests we should write our own. We're going to write a cuke test which verifies that the tab navigation buttons in our example Olympics app work correctly. We'll write these tests in a new *feature file* called `Frank/features/navigation.feature`. Create that file with the following content:
 
-``` cucumber
+``` cucumber navigation.feature
 Feature: Navigating between screens
 
 Scenario: Moving from the 'Home' screen to the 'Events' screen
@@ -61,7 +62,7 @@ This expresses a test scenario. Now let's ask cucumber to test just this feature
 
 Create a *step definition* file called `features/step_definitions/navigation_steps.rb`. When cucumber encountered the undefined steps just now it outputted a bunch of boilerplate code for defining those steps. We'll cut and paste that code into our new step definition file. You should end up with this:
 
-``` ruby
+``` ruby navigation_steps.rb
 Then /^I should be on the Home screen$/ do
   pending # express the regexp above with the code you wish you had
 end
@@ -75,7 +76,7 @@ Then /^I should be on the Events screen$/ do
 end
 ```
 
-Now we're going to implement these step definitions one at a time. Let's start with the first one. We need to check that we are on the home screen. Looking at the home screen in Symbiote it consists of a big UIView with a UIImageView inside of it called `Icon512x512.png`. Our test can verify that the app is displaying the home screen by checking whether that UIImageView is in the view heirarchy. If it is then presumably we're on the home screen. If we don't see that view then we're not on the home screen. This isn't an *ideal* way of verifying where we are - for a start that image view should have a better accessibility label that would make our tests less brittle and coincidentally also make the VoiceOver experience better - but it will do for now. 
+Now we're going to implement these step definitions one at a time. Let's start with the first one. We need to check that we are on the home screen. Looking at the home screen in Symbiote it consists of a big UIView with a UIImageView inside of it called `Icon512x512.png`. Our test can verify that the app is displaying the home screen by checking whether that UIImageView is in the view heirarchy. If it is then presumably we're on the home screen. If we don't see that view then we're not on the home screen. This isn't an *ideal* way of verifying where we are - for a start that image view should have a better accessibility label which would make our tests less brittle and coincidentally also make the VoiceOver experience better - but it will do for now. 
 
 To test whether a view exists we create a view selector which selects a UIImageView with the correct accessibility label and then we ask frank to verify that that selector matches at least one view. The entire step definition will look like this:
 
@@ -85,9 +86,9 @@ Then /^I should be on the Home screen$/ do
 end
 ```
 
-Now when we run the cucumber feature again with `cucumber features/navigation.feature` we should see that step passing in the output. We are indeed at the Home screen at launch, and our test is verifying that. One step down, two to go!
+Now when we run the cucumber feature again with `cucumber features/navigation.feature` we should see that step show up as green and passing in cucumber's output. We are indeed at the Home screen at launch, and our test has verified that. One step down, two to go!
 
-Next we need to define the step which navigates to a specific tab. To do that we'll ask frank to touch the appropriate tab button in the UI. Looking in Symbiote it appears that those buttons are implemented as views of class `UITabBarButton` and UIKit is giving them nice acccessibility labels. This means all we need to do to implement this step is something like this:
+Next we need to define the step which navigates to a specific tab. To do that we'll ask frank to touch the appropriate tab button in the UI. Looking in Symbiote it appears that those buttons are implemented as views of class `UITabBarButton`. We can also see that UIKit is giving them nice acccessibility labels. This means all we need to do to implement this step is something like this:
 
 ``` ruby
 When /^I navigate to "Events"$/ do |tab_name|
