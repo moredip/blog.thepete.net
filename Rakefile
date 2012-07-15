@@ -208,8 +208,8 @@ end
 # Deploying  #
 ##############
 
-desc "Deploy website via s3cmd"
-task :deploy_s3 do
+desc "Generate and then deploy website via s3cmd"
+task :gen_deploy_s3 => [:integrate, :generate] do
   puts "## Deploying website via s3cmd"
   ok_failed system("s3cmd sync --acl-public --no-delete-removed --reduced-redundancy public/* s3://#{s3_bucket}/")
 end
