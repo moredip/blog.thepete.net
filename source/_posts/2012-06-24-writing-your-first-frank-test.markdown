@@ -91,7 +91,7 @@ Now when we run the cucumber feature again with `cucumber features/navigation.fe
 Next we need to define the step which navigates to a specific tab. To do that we'll ask frank to touch the appropriate tab button in the UI. Looking in Symbiote it appears that those buttons are implemented as views of class `UITabBarButton`. We can also see that UIKit is giving them nice acccessibility labels. This means all we need to do to implement this step is something like this:
 
 ``` ruby
-When /^I navigate to "Events"$/ do |tab_name|
+When /^I navigate to "(.*?)"$/ do |tab_name|
   touch "view:'UITabBarButton' marked:'#{tab_name}'"
 end
 ```
