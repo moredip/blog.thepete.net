@@ -113,11 +113,19 @@ That's it, we're done with our Jenkins set up. If all has been done correctly wh
 
 ## Setting up Frank tests
 
-We now have a very basic CI setup for our iOS app. Next I'll describe how to integrate Frank into this CI system. 
+We now have a very basic CI setup for our iOS app. Next I'll describe how to integrate Frank into this CI system. I'm going to assume that your app itself has already been set up for Frank. If not, check out [a previous post of mine](/blog/2012/06/24/writing-your-first-frank-test/) for all the details. It's a painless process.
 
-I'm going to assume that your app itself has already been set up for Frank. If not, check out [my previous post](/blog/2012/06/24/writing-your-first-frank-test/) for all the details. It's a painless process.
+First we need to declare our dependency on the frank-cucumber gem which we'll use to actually run our Frank tests. We do that by updating our Gemfile:
+``` ruby Gemfile
+source "https://rubygems.org"
 
-The first step is to create a Rake task which will generate a Frankified build of your app. I'll add that to the ci namespace in my Rakefile as follows:
+gem "rake"
+gem "xcodebuild-rb", "~> 0.3.0"
+
+gem "frank-cucumber", "~> 0.9.4"
+```
+
+The next step is to create a Rake task which will generate a Frankified build of your app. I'll add that to the ci namespace in my Rakefile as follows:
 
 ```ruby Rakefile additions
 namespace :ci do
