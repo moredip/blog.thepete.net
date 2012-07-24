@@ -3,7 +3,6 @@ layout: post
 title: "Running Frank as part of iOS CI"
 date: 2012-07-22 09:44
 comments: true
-published: false
 categories: 
 ---
 
