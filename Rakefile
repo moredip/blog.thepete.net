@@ -10,8 +10,6 @@ document_root  = "~/website.com/"
 rsync_delete   = true
 deploy_default = "rsync"
 
-s3_bucket      = "blog.thepete.net"
-
 # This will be configured for you when you run config_deploy
 deploy_branch  = "gh-pages"
 
@@ -207,12 +205,6 @@ end
 ##############
 # Deploying  #
 ##############
-
-desc "Generate and then deploy website via s3cmd"
-task :gen_deploy_s3 => [:integrate, :generate] do
-  puts "## Deploying website via s3cmd"
-  ok_failed system("s3cmd sync --acl-public --no-delete-removed --reduced-redundancy public/* s3://#{s3_bucket}/")
-end
 
 desc "add blogger-style permalinks"
 task :blogger_permalinks do

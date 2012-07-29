@@ -1,0 +1,27 @@
+#! /usr/bin/env ruby
+
+require_relative( 'git_helper' )
+require_relative( 'deployer' )
+
+BUCKET_NAME='preblog.thepete.net'
+PREPROD_MARKER_BRANCH='pre-blog'
+
+candidate_rev = ARGV[0] || 'HEAD'
+
+unless GitHelper.is_fast_forward( PREPROD_MARKER_BRANCH, candidate_rev )
+  puts "sorry, #{PREPROD_MARKER_BRANCH} can't be fast-forwarded to #{candidate_rev}"
+  exit 1
+end
+
+distance = GitHelper.distance_between_revs( PREPROD_MARKER_BRANCH, candidate_rev )
+if distance == 0
+  puts "#{candidate_rev} appears to be what's currently in preprod. No point in deploying."
+  exit 2
+else
+  puts "There have been #{distance} commits since your last push to preprod"
+end
+
+
+Deployer.deploy_to_bucket_from_commit( BUCKET_NAME, candidate_rev )
+`git branch -f #{PREPROD_MARKER_BRANCH} #{candidate_rev}`
+`git push origin #{PREPROD_MARKER_BRANCH}:#{PREPROD_MARKER_BRANCH}`

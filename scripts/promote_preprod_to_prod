@@ -1,0 +1,28 @@
+#! /usr/bin/env ruby
+
+require_relative( 'git_helper' )
+require_relative( 'deployer' )
+
+BUCKET_NAME='blog.thepete.net'
+PREPROD_MARKER_BRANCH='pre-blog'
+PROD_MARKER_BRANCH='live-blog'
+
+unless GitHelper.is_fast_forward( PROD_MARKER_BRANCH, PREPROD_MARKER_BRANCH )
+  puts <<-EOS
+Sorry, what's live on blog.thepete.net now can't be cleanly fast-forwarded into what's 
+currently on preblog.thepete.net. Get your pre-blog branch fixed up first and then try again."
+  EOS
+  exit 1
+end
+
+distance = GitHelper.distance_between_revs( PROD_MARKER_BRANCH, PREPROD_MARKER_BRANCH )
+if distance == 0
+  puts "Looks like preprod and prod are already in sync. Nothing to be done."
+  exit 2
+else
+  puts "There are #{distance} new commits in pre-prod which will now be promoted to prod."
+end
+
+Deployer.deploy_to_bucket_from_commit( BUCKET_NAME, PREPROD_MARKER_BRANCH )
+`git branch -f #{PROD_MARKER_BRANCH} #{PREPROD_MARKER_BRANCH}`
+`git push origin #{PROD_MARKER_BRANCH}:#{PROD_MARKER_BRANCH}`
