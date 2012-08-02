@@ -31,7 +31,7 @@ My goal was to be able to deploy from any git commit to my pre-prod environment 
 
 I track what is in pre-prod and prod using git marker branches. After successfully deploying a commit to an environment the corresponding marker branch is updated to point to that commit. That way I can always know which commit is deployed to each environment just by checking with git.
 
-For more details on how I do the git branch manipulation you can take a look at the [push_preprod]() and [promote_preprod_to_prod] scripts themselves.
+For more details on how I do the git branch manipulation you can take a look at the [push_preprod](https://github.com/moredip/blog.thepete.net/blob/fea96051bf4dbaaf46b1d5ef203353edbf7ef36b/scripts/push_preprod) and [promote_preprod_to_prod](https://github.com/moredip/blog.thepete.net/blob/fea96051bf4dbaaf46b1d5ef203353edbf7ef36b/scripts/promote_preprod_to_prod) scripts themselves.
 
 ## Deploying a commit
 The steps I use to deploy an arbitrary commit of an octopress blog to S3 are:
@@ -40,6 +40,6 @@ The steps I use to deploy an arbitrary commit of an octopress blog to S3 are:
 - run the rake task which compiles the Octopress source into the static site files
 - push the static files up to an S3 bucket using `s3cmd`
 
-I encapsulated this in a Deployer class which is bundled with my blog's source [here](http://github.com/moredip/blog.thepete.net/tree/scripts/deployer.rb). **TODO**
+I encapsulated this in a Deployer class which is bundled with my blog's source [here](https://github.com/moredip/blog.thepete.net/blob/fea96051bf4dbaaf46b1d5ef203353edbf7ef36b/scripts/deployer.rb). **TODO**
 
 ## 
