@@ -6,9 +6,9 @@ comments: true
 categories: 
 ---
 
-I spent a fun evening recently setting up a deployment pipeline for this blog. The motivation was that I wanted some way to publish draft blog entries for other people to review, but I didn't want these drafts to show up on my public site. 
+I spent a fun evening recently setting up a deployment pipeline for this blog. I'd like to share some details on what I set up and why. 
 
-I played with Octopress's `published: false` option, but it really didn't give me what I needed. Then I saw someone commenting that the ideal would be to have a preview version of the entire site available at a seperate url. A **pre-production environment**, essentially. Hmm, I thought. Every web project I work on has one of these. It's used to showcase the version of the system which is going to be released to production. Why don't I just set that up.
+The motivation was that I wanted some way to publish draft blog entries for other people to review, but I didn't want these drafts to show up on my public site.  I played with Octopress's `published: false` option, but it really didn't give me what I needed. Then I saw someone commenting that the ideal would be to have a preview version of the entire site available at a seperate url. A **pre-production environment**, essentially. Hmm, I thought. Every web project I work on has one of these. It's used to showcase the version of the system which is going to be released to production. That's what I need - why don't I just set that up for my blog?
 
 ##Delivery pipelines
 
@@ -47,3 +47,10 @@ I encapsulated this in a Deployer class which is bundled with my blog's source [
 ## Done
 
 That's pretty much it. It's a simple lightweight system that give me just enough release management with very little overhead.
+
+## TODO
+
+
+Ideally I'd like to have my pre-prod environment use a slightly different Octopress configuration than my prod environment. For example I'd like to turn off disqus commenting in pre-prod since I don't want people to make comments on preview posts which may well be lost once I promote to prod. I'd also like to add a little banner so people know they'e viewing a preview copy of my blog.  
+
+I'm not quite sure at the moment on the best way to approach this, so I'm leaving it be for now. 
