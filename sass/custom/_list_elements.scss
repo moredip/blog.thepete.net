@@ -1,0 +1,19 @@
+@mixin beveled-list {
+  &:not(:first-of-type) { border-top: 2px solid $bevel-light; padding-top: 10px; }
+  &:not(:last-of-type) { border-bottom: 1px solid $bevel-dark;  padding-bottom: 10px; } 
+}
+
+ul { padding-left: 20px; }
+
+dl {
+  border: 1px dashed rgba(0,0,0, .4);
+  padding: 20px; }
+
+dt {
+  font-weight: bold;
+  &:not(:first-of-type) { border-top: 1px solid $bevel-light; padding-top: 10px; }}
+
+dd {
+  color: $base0;
+  &:not(:last-of-type) { border-bottom: 1px solid $bevel-dark;  padding-bottom: 10px; }
+  &:before { content: "\21b3"; color: lighten($base03, 10); }}

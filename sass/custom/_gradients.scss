@@ -1,0 +1,14 @@
+@mixin blue-gradient {
+  @include light-text;
+  @include linear-gradient(top, lighten( rgba($base02, .4), 10%), rgba($base03, .6) );
+  
+  &:hover, &:focus { 
+    background: none;
+    @include light-text;
+    @include linear-gradient(top, lighten(rgba($base02, .4), 20%), rgba($base03, .6) ); 
+    } // &:hover, &:focus
+  
+  &:active {
+    @include linear-gradient(top, rgba($base02, .6), rgba($base03, .6) );
+    } // &:active
+} // @mixin blue-gradient

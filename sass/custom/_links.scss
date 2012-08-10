@@ -1,0 +1,33 @@
+$link-color: lighten($base02,10%);
+$bright-link: lighten($base02, 20%);
+$dark-link: darken($solar-magenta, 15%);
+$hover-link-color: $bright-link;
+$visited-link-color: $link-color;
+$link-transition: color .2s;
+
+@mixin link {
+  color: $link-color;
+  text-decoration: none;
+  text-shadow: none;
+  @include transition( $link-transition );
+  &:visited { color: $visited-link-color; }
+  &:hover { color: $hover-link-color; }
+}
+
+a { @include link; }
+
+
+// this targets the li element as the child.
+// note how this is a downside of over-nesting
+// li > a within a nav
+// this mixin is used in _header.sass
+@mixin nav-links {
+  &:hover {
+    &:nth-of-type(1) a { color: $solar-orange; }
+    &:nth-of-type(2) a { color: $solar-magenta; }
+    &:nth-of-type(3) a { color: $solar-cyan; }
+    &:nth-of-type(4) a { color: $solar-blue; }
+    &:nth-of-type(5) a { color: $solar-green; }
+    &:nth-of-type(6) a { color: $solar-red; }
+  }
+}

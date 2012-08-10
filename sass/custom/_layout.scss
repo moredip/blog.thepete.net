@@ -1,9 +1,10 @@
 // Here you can easily change your sites's layout.
 // To give it a try, uncomment some of the lines below, make changes, rebuild your blog, and see how it works.
 
+$header-vertical-padding: 10px;
 //$header-font-size: 1em;
-//$header-padding-top: 1.5em;
-//$header-padding-bottom: 1.5em;
+$header-padding-top: $header-vertical-padding;
+$header-padding-bottom: $header-vertical-padding;
 
 //$max-width: 1350px;
 //$indented-lists: true;

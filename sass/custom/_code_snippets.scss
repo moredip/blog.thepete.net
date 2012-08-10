@@ -1,0 +1,23 @@
+html {
+  figure.code, .gist {
+    text-shadow: none;
+    @include box-shadow( 0 1px 3px 0 rgba(0,0,0, .2) );
+
+    .gist-file {
+      margin: 0; }
+  }
+}
+
+.highlight, html .gist .gist-file .gist-syntax .gist-highlight {
+  .line-numbers {
+    background: lighten($base03, 1) $noise-bg !important;
+    border-right: 1px solid darken($base02, 2) !important;
+    @include box-shadow(lighten($base03, 2) -1px 0 inset);
+    text-shadow: lighten($base02, 2) 0 -1px;
+  }
+}
+
+pre { @include border-radius( 0 ); }
+.pre-code, html .gist .gist-file .gist-syntax .gist-highlight pre, .highlight code {
+  background: darken($base02, 1) $noise-bg !important;
+}

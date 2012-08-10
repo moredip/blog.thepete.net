@@ -4,10 +4,17 @@
 
 //$sans: "Optima", sans-serif;
 //$serif: "Baskerville", serif;
-//$mono: "Courier", monospace;
-//$heading-font-family: "Verdana", sans-serif;
-//$header-title-font-family: "Futura", sans-serif;
-//$header-subtitle-font-family: "Futura", sans-serif;
+$mono: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace !default;
+$mono2: "lucida console", "Courier New", monospace;
+$heading-font-family: $mono;
+$header-title-font-family: $mono2;
+$header-subtitle-font-family: $mono;
 
-$header-title-font-family: 'Basic', sans-serif;
-$serif: 'Poly', serif;
+@mixin light-text {
+  color: $base1;
+  // text-shadow: 0 -1px rgba($base03, .3);
+}
+@mixin dark-text {
+  color: $base03;
+  // text-shadow: 0 1px rgba($white, .3);
+}

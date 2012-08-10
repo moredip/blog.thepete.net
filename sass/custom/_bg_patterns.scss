@@ -1,0 +1,24 @@
+// this is your sweet bg styling
+@mixin sweet-pete-bg {
+  &:before {
+    @include absolute-fill;
+    z-index: -1;
+    font-size: 17em;
+    font-family: $mono;
+    color: rgba($base1, .8);
+    text-shadow: -1px -1px 0 rgba($base01, .6);
+    background-color: $base2;
+    background-image: $noise-bg;
+    // lets the letters break and the overflow go.
+    overflow: hidden;
+    word-break: break-word;
+
+    // each line must be in quotes. 
+    // "\a" makes a line-break
+    content: 
+        "def thepete do" "\a" 
+            "something"  "\a"
+        "end";
+    white-space: pre;
+  } // &:before
+} // @mixin sweet-pete-bg

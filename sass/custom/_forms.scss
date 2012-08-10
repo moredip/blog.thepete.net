@@ -1,0 +1,36 @@
+$input-border: 1px solid rgba($base02, .8);
+$input-box-shadow: 0 1px 2px 0 rgba($white, .1);
+$input-box-shadow-bright: 0 1px 2px 0 rgba($white, .4);
+$input-bg-color: $base03;
+$input-padding: 5px 10px;
+$search-padding: .3em .5em 0; // .search in _header.scss
+$input-radius: .5em;
+$input-transition: background .2s;
+
+@mixin text-inputs {
+  outline: none;
+  border: $input-border;
+  background-color: $input-bg-color;
+  padding: $input-padding;
+  @include light-text;
+  @include border-radius( $input-radius );
+  @include box-shadow( $input-box-shadow );
+  @include transition( $input-transition );
+  &:focus {
+    @include light-text;
+    border: $input-border;
+    background: $base1;
+    @include dark-text;
+    @include box-shadow( $input-box-shadow-bright ); }
+}
+
+input {
+  &[type=text],
+  &[type=email],
+  &[type=password] { @include text-inputs; }
+} // input
+
+textarea { 
+  @include text-inputs; 
+  min-height: 5em;
+}

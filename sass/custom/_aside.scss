@@ -1,0 +1,9 @@
+aside.sidebar {
+  border-top: none;
+  &:hover a { @include link; }
+  .collapse-sidebar & { background: none; }
+} // aside.sidebar
+
+.toggle-sidebar:after {
+  text-shadow: none;
+}
