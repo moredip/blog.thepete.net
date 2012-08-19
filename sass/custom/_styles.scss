@@ -9,3 +9,23 @@
 body > header h1 {
   font-size: 3.5em;
 }
+
+figure.diagram {
+  border: 4px double $base0;
+  padding: 10px;
+  margin: 30px 5px;
+
+  img {
+    display: block;
+    margin: auto;
+    border: none;
+    @include box-shadow(none);
+  }
+
+  figcaption {
+    padding-left:0.5em;
+    margin-top: 5px;
+    font-size: 1.2em;
+    font-style: italic;
+  }
+}
