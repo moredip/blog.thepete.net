@@ -28,5 +28,5 @@ As an example of why I'd like Frank to switch, it appears that with PublicAutoma
 
 ## Timeline 
 
-I already have a branch of the Frank repo which contains the above changes, and appears to be working well with the apps I've tested it on. I hope to release that soon (within the next couple of weeks) as 1.0.pre1. At that point I'll be asking folks in the Frank community to try it out and give me feedback on what works and what doesn't. I expect a few minor teething troubles with tests that use older, more obscure UISpec helper methods that Frank will have lost, but there shouldn't be any issue that take more than a few lines of code to solve.
+I already have [a branch](http://github.com/moredip/Frank/tree/onepointoh) of the Frank repo which contains the above changes, and it appears to be working well with the apps I've tested it on. I hope to release that soon (within the next couple of weeks) as a 1.0.pre1 version of the frank-cucumber gem. At that point I'll be asking folks in the Frank community to try it out and give me feedback on what works and what doesn't. I expect a few minor teething troubles with tests that use older, more obscure UISpec helper methods that Frank will have lost, but there shouldn't be any issue that take more than a few lines of code to solve.
 
