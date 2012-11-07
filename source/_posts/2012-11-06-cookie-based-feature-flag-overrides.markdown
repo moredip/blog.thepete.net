@@ -10,7 +10,7 @@ categories:
 
 If you're practicing Continuous Delivery then you're probably using Feature Flags to hide half-baked features which are being shipped into production as latent code. It's useful to allow individual users to **manually override** those feature flags so that they can get a preview of these latent features before they are released to everyone. People wanting to do this would be testers, product stakeholders, and external beta testers. 
 
-This is a similar concept to the Canary Releasing approach which organizations like Facebook use to trial new features. The difference is that with manual overrides each individual is opting in for features themselves, as opposed to being place arbitrarily into the pool of users assigned as canaries.
+This is a similar concept to the Canary Releasing approach which organizations like Facebook use to trial new features. The difference is that with manual overrides each individual is opting in for features themselves, as opposed to being arbitrarily placed into the pool of users assigned as canaries.
 
 ## A lightweight flag override
 
@@ -48,16 +48,16 @@ Once that cookie is set in my browser then whenever I register a new account usi
 
 ## Simple usability improvements
 
-Obviously it's not ideal to have users manually editing raw JSON within a cookie. In our app we added a simple admin-restricted page to our app which listed all known feature flags in the environment and allowed users to view and set which flags were manually overridden using radio buttons with three states - On, Off, or Default. Changing those buttons modified which flag overrides were stored in the cookie JSON. 
+Obviously it's not ideal to have users manually editing raw JSON within a cookie. In our app we added a simple admin-restricted page for viewing and modifying these overrides. This page listed all known feature flags in the environment and allowed users to control which flags are being manually overridden via radio buttons with three states - On, Off, or Default. Changing those buttons simply modified which flag overrides were stored in the cookie JSON. 
 
-This page also highlighted stale flags which no longer existed in the environment but were still set as overridden in the cookie. This is a fairly common occurance if you're retiring your feature flags regularly (which you absolutely should be doing).
+This page also highlighted stale overrides - flags which no longer existed in the environment but were still being 'overridden' in the cookie. This is a fairly common occurance if you're retiring your feature flags regularly (which you absolutely should be doing). These stale flags have no effect on the application; listing them is simply a way of prompting the user that the overrides are stale and should probably be removed.
 
 ## Limitations
 
-This approach is pretty simplistic; there are clearly some limitations. Firstly the overrides are stored client-side. That means you can't restrict which flags are overriden, you can't audit which flags are overridden, and you can't go in as an administrator and modify the overrides. There are obviously also security concerns to be aware of when you're allowing client-side state to impact what happens server-side.
+This approach is pretty simplistic and clearly there are some limitations. Firstly the overrides are stored client-side. That means you can't restrict which flags are overriden, you can't audit which flags are overridden, and you can't go in as an administrator and modify the overrides. There are obviously also security concerns to be aware of when you're allowing client-side state to impact what happens server-side.
 
-Another issue is that the overrides are per-browser rather than per-user. That means that users have to explicitly configure the overrides for each browser (and mobile device) they access your app with, and remember to keep them in sync. You also need to remember that you're setting the flags for all users that you log in as via that browser, not just the current user. This is probably counter to a lot of people's intuition. However the fact that the overrides aren't tied to a specific user can sometimes be helpful for testing - the registration email example above was actually a good example of that. 
+Another issue is that the overrides are per-browser rather than per-login. That means that users have to explicitly configure the overrides for each browser (and mobile device) they access your app with, and remember to keep them in sync. You also need to remember that you're setting the flags for all users that you log in as via that browser, not just the current user. This is probably counter to a lot of people's intuition. However the fact that the overrides aren't tied to a specific user can sometimes be helpful for testing - the registration email example above was actually a good example of that. 
 
 ## Wrapping up
 
-All in all this is a nice simple approach to get started along the path of configurable feature flags. An organization that really embraces this idea will probably outgrow this basic approach fairly quickly, but I belive it is a simple way to get started and show the value of feature overrides. If you're using feature flagging but not using overrides currently then I encourage you to consider this approach too.
+All in all this is a nice simple approach to get started along the path of configurable feature flags. An organization that really embraces this idea will probably outgrow this basic implementation fairly quickly, but I belive it is a simple way to get started and show the value of feature overrides without a bunch of effort. If you're using feature flagging but not using overrides currently then I encourage you to consider this approach too.
