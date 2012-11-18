@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 
-In this post I'll describe an experiment where rather than using [Frank](http://testingwithfrank.com) to write iOS acceptance tests I instead combined Kiwi with the low-level libraries that Frank uses internally. This allowed me to write acceptance tests in pure objective-C which run in the app process itself, very similarly to the way [KIF](http://github.com/square/kif) works.
+In this post I'll describe an experiment where rather than using [Frank](http://testingwithfrank.com) to write iOS acceptance tests I instead combined [Kiwi](https://github.com/allending/Kiwi) with the low-level libraries that Frank uses internally. This allowed me to write acceptance tests in pure Objective-C which run in the app process itself, very similarly to the way [KIF](http://github.com/square/kif) works.
 
 ## What?
 
@@ -14,7 +14,7 @@ Before I start, let me be clear that I personally wouldn't use this approach to 
 
 ## Why not KIF?
 
-I suspect that the ability to write your tests in Objective C is the main reason that some developers turn to KIF for their acceptance tests. 
+I suspect that the ability to write your tests in Objective-C is the main reason that some developers turn to KIF for their acceptance tests. 
 
 I have two problems with KIF though. First, the tool conflates three distinct activities - test organization, view selection, and simulating interactions. I think these activities are better served when broken out into distinct responsibilities. In the case of test organization, tools like Cedar and Kiwi have had a lot of uptake and Kiwi in particular is becoming a very popular choice. Alternatively you can use one of the more established tools like OCUnit. These tools handle things like organizing test code into test cases and test suites, running those tests, asserting on values, and reporting the output in a useful way. Why re-invent that wheel in KIF, when it's the core competency of these other tools? When it comes to view selection and simulating interactions, because these two are intertwined in KIF you end up with really verbose code if you want to do something like find an element, check it's visible, tap it, then check it went away. 
 
@@ -24,7 +24,7 @@ The second concern I have with KIF is simply that it doesn't seem to be under ac
 
 I visited a couple of iOS development teams in Australia recently and this topic came up with both teams while chatting with them. It occurred to me that you could probably implement KIF-style tests pretty simply using the view selection and automation library which Frank uses, plus Kiwi for a test runner. I had a 15 hour flight back to San Francisco, and this seemed like a fun experiment to while away a couple of those hours.
 
-The idea is simple really. Wire up Kiwi just like you would for [Application Unit Tests](http://developer.apple.com/library/ios/#documentation/DeveloperTools/Conceptual/UnitTesting/02-Setting_Up_Unit_Tests_in_a_Project/setting_up.html#//apple_ref/doc/uid/TP40002143-CH3-SW6), but rather than doing white-box testing on individual classes inside your app you instead drive your app's UI by selecting views programmatically using Shelley (Frank's view selection engine) and then simulate interacting with those views using PublicAutomation (the lightweight wrapper over Apple's private UIAutomation framework that Frank also uses). Alternatively after selecting views using Shelley you might then just programatically inspect the state of the views to confirm that the UI has responded appropriately to previous steps in your test.
+The idea is simple really. Wire up Kiwi just like you would for [Application Unit Tests](http://developer.apple.com/library/ios/#documentation/DeveloperTools/Conceptual/UnitTesting/02-Setting_Up_Unit_Tests_in_a_Project/setting_up.html#//apple_ref/doc/uid/TP40002143-CH3-SW6), but rather than doing white-box testing on individual classes inside your app you instead drive your app's UI by selecting views programmatically using [Shelley](https://github.com/testingwithfrank/Shelley) (Frank's view selection engine) and then simulate interacting with those views using [PublicAutomation](https://github.com/testingwithfrank/PublicAutomation) (the lightweight wrapper over Apple's private UIAutomation framework that Frank also uses). Alternatively after selecting views using Shelley you might then just programatically inspect the state of the views to confirm that the UI has responded appropriately to previous steps in your test.
 
 ## How does it work?
 
@@ -60,7 +60,7 @@ describe(@"User Journey", ^{
 SPEC_END
 ```
 
-I'm using the Page Object pattern to encapsulate the details of how each screen is automated. In this case the `EventsScreen` class is playing that Page Object role. 
+I'm using the [Page Object](http://www.cheezyworld.com/2010/11/09/ui-tests-not-brittle/) pattern to encapsulate the details of how each screen is automated. In this case the `EventsScreen` class is playing that Page Object role. 
 
 The aim here is that you can read the high-level flow test above and quite easily get the gist of what it's testing. Now let's dive into the details and see how the magic happens inside `EventsScreen`:
 
@@ -148,4 +148,4 @@ Eventually you'd probably also evolve a little internal DSL that lets you implem
 
 ## What do you think?
 
-I'm very interested to see if this approach is appealing to people. If you're interested, or even better if you take this and run with it then please let me know.
+I'm very interested to see if this approach is appealing to people. If you're interested - or even better if you take this and run with it - then please let me know.
