@@ -45,5 +45,5 @@ require 'heroku-headless/disposable_deployer'
 HerokuHeadless::DisposableDeployer.new.go
 ```
 
-## Behind the curtain
-In a future post I'll describe what the gem actually does behind the scenes to make the deployment happen.
+## UPDATE: Behind the curtain
+I wrote a [follow up post](/blog/2013/01/22/deploying-to-heroku-from-ci-the-gory-details/) to this one which describes how the heroku-headless gem actually works. Check that out if you're interested in the gory details.
