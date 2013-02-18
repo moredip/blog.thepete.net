@@ -240,4 +240,4 @@ One final thing to note before we wrap up - we have not made any reference to th
 
 The flip side of keeping the DOM and jQuery contained without our Views is that we should always strive to keep our Backbone Views as skinny and logic-free as possible. Because Views interact with the DOM they are particularly tricky to test, and our tests are slower to run because we have to run them in a browser. We want to keep our views as simple as possible so that we don't have to write too many of those tricky tests. Instead we want to push logic into other parts of our application where it can be easily tested in isolation.
 
-In the next installment we'll dive into testing Backbone Views and their interaction with the DOM. I'll also go into more details on what a View's responsibilities should be.
+In the [next installment](/blog/2013/01/23/test-driven-backbone-dot-js-part-two/) we'll dive into testing Backbone Views and their interaction with the DOM. I'll also go into more details on what a View's responsibilities should be.
