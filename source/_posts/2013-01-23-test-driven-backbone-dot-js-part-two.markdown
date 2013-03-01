@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 
-In the previous installment of this series we looked at the basics of test-driving the development of a Backbone.js app by TDDing some simple functionality for Backbone Models.
+In the [previous installment](/blog/2013/01/23/test-driven-backbone-dot-js-part-one/) of this series we looked at the basics of test-driving the development of a Backbone.js app by TDDing some simple functionality for Backbone Models.
 
 In this installment we're going to get a bit more advanced, looking at how we can test-drive Backbone Views. Because views integrate with the DOM they can be a little more fiddly to test, but TDDing your views is still a very achievable goal.
 
@@ -286,3 +286,5 @@ We're using the view's `$(...)` helper method to do a scoped lookup of the `<tex
 Our new card view now provides all the functionality we need, so we'll wrap this up. 
 
 In this installment we've seen how Jasmine-jQuery can help assert what HTML is being rendered by our Backbone Views, and how its Fixtures functionality can help set up pre-requisite chunks of HTML content for the duration of a test. That said, we've also learned that if we require fixtures to test our views then this could indicate a poor design. We've observed that Backbone views act as a translation layer between the core of the application and the DOM. Finally, we've seen how to use jQuery to simulate user interactions and how sinon spy's can be used to check that events are being triggered correctly.
+
+In the [next installment](/blog/2013/02/24/test-driven-backbone-dot-js-part-three/) of this series I cover where Controllers fit into a Backbone app and show how we can TDD the implementation of them.
