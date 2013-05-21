@@ -134,7 +134,9 @@ As you can see, most of `EventsScreen` methods are only a line or two long. They
 
 ## Proof of Concept satisfied
 
-And that's pretty much all that was needed. There was the usual tedious XCode plumbing to get Kiwi and everything else working together, plus a few other bits and pieces, but really there wasn't much to it.
+And that's pretty much all that was needed. There was the usual tedious XCode plumbing to get Kiwi and everything else working together, plus a few other bits and pieces, but really there wasn't much to it. 
+
+A few people have asked to see all the moving parts of this experiment, so I've pushed the changes to [this branch](https://github.com/moredip/2012-Olympics-iOS--iPad-and-iPhone--source-code/tree/kiwi-acceptance-mk1) on github.
 
 ## What else would you need?
 
