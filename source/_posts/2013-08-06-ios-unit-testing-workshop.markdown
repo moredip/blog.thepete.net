@@ -16,11 +16,11 @@ I'm preparing to run a [paid 3 hour workshop on iOS unit testing](https://thestr
 ##Details on the workshop
 Learn the why and the how of unit-testing for your iOS applications using Kiwi, a popular open-source testing library.
 
-You will leave this workshop excited to apply what you’ve learned to start testing your iOS app. In fact, you’ll probably want to fire up your project in XCode straight afterwards!
+You will leave this workshop excited to apply what you’ve learned to start testing your iOS app. In fact, you’ll probably want to fire up your project in Xcode straight afterwards!
 
 We’ll start with the basics, covering what unit-testing is (and isn’t), and why it will be a valuable addition to your programming toolbox.
 
-Having covered some theory we’ll then spend the majority of the workshop learning by doing. We’ll start by setting up an XCode project for testing with Kiwi, and quickly move on to writing our first simple test.
+Having covered some theory we’ll then spend the majority of the workshop learning by doing. We’ll start by setting up an Xcode project for testing with Kiwi, and quickly move on to writing our first simple test.
 
 After learning the basics with some isolated examples we’ll move on to look at how to unit test a real iOS app. As we go we’ll learn about mocking and stubbing, and when to make the decision not to test. We’ll learn how to test in the context of a CocoaTouch app, and how testing can positively influence the design of your app (hint: your app delegate and your view controller aren’t the only place to put your business logic!).
 
