@@ -12,17 +12,17 @@ The rack-flags gem allows you to define a set of *feature flags* which can be tu
 
 ## A concrete use case
 
-Let's use a concrete example. We're developing a new photo sharing feature for our Web 3.0 application. This is a big project, and we want to be releasing our app to production on a regular basis while the Photo Sharing project is still in progress. To allow that to happen we add an 'expose photo sharing UI' feature flag to our app, which is defaulted to Off while the project is in progress. In our application code we can check for that feature flag and only display a link to the new Photo Sharing section of our UI if the feature is On for the current request. Internal users (product owners, QAs, devs, etc) who want access to the half-finished work do so by overriding the 'expose photo sharing UI' flag to On using an admin UI (a simple rack app that ships with the rack-flags gem). 
+Let's use a concrete example. We're developing a new photo sharing feature for our Web 3.0 application. This is a big project, and we want to be releasing our app to production on a regular basis while the Photo Sharing project is still in progress. To allow that to happen we add an 'expose photo sharing UI' feature flag to our app, which is defaulted to *Off* while the project is in progress. In our application code we can check for that feature flag and only display a link to the new Photo Sharing section of our UI if the feature is *On* for the current request. Internal users (product owners, QAs, devs, etc) who want access to the half-finished work do so by overriding the 'expose photo sharing UI' flag to *On* using an admin UI (a simple rack app that ships with the rack-flags gem). 
 
-Once the first version of Photo Sharing is ready for prime time we simple change the default for the feature flag to On. Now every user has access to the new functionality. After the feature is live for a while and we're confident that it works as advertised we can retire the 'expose photo sharing UI' flag, along with the checks that were added to to the application code.
+Once the first version of Photo Sharing is ready for prime time we simple change the default for the feature flag to *On*. Now every user has access to the new functionality. After the feature has been live for a while and we're confident that it works as advertised we can retire the 'expose photo sharing UI' flag, along with the checks that were added to to the application code.
 
 ## The mechanics
 
-The ability to override flags for a given user is achieved using cookies. the rack-flags gem provides a rack app which acts as a simple feature flag admin UI. It lists the flags which have been configured for your app, and allows you to override their default state. Those overrides are stored in the user's cookie. On each request to your web application a small piece of rack middleware inspects that cookie. When your app asks rack-flags whether a feature is turned off or on rack-flags combines the default state of each flag with whatever overrides were detected in the cookie and uses that to tell your application whether the flag is off or on.
+The ability to override flags for a given user is achieved using cookies. the rack-flags gem provides a rack app which acts as a simple feature flag admin UI. It lists the flags which have been configured for your app, and allows you to override their default state. Those overrides are stored in the user's cookie. On each request to your web application a small piece of rack middleware inspects that cookie. When your app asks rack-flags whether a feature is turned off or on rack-flags combines the default state of each flag with whatever overrides were detected in the cookie and uses that to determine whether the flag is *Off* or *On*.
 
 ## Some code examples
 
-The yaml file which defines the set of feature flags for your app, along with their default state:
+A yaml file defines the set of feature flags for your app, including a description of the flag and its default state:
 ```yaml feature_flags.yaml
 foo: 
   description: This is my first feature flag
@@ -42,7 +42,7 @@ config.middleware.use RackFlags::RackMiddleware, yaml_path: File.expand_path('..
 mount RackFlags::AdminApp, at: 'some_route'
 ```
 
-Checking whether a feature is enabled or disabled for a specific request:
+Checking whether a feature is *Off* or *On* for a specific request:
 ```ruby SomeController.rb
   class SomeController < ApplicationController
     def some_action
@@ -52,12 +52,14 @@ Checking whether a feature is enabled or disabled for a specific request:
   end
 ```
 
-That's all there is to it. Check out the [github repo's README](https://raw.github.com/moredip/rack-flags) for more documentation, including an example of setting up a Sinatra app.
+That's all there is to it! 
+
+Check out the [github repo's README](https://raw.github.com/moredip/rack-flags) for more documentation, including an example of setting up a Sinatra app.
 
 
 
 ## Credits and prior work
-This gem is based off of a project myself and some fellow ThoughtWorkers were on at a large online retailer building a Rails-based e-commerce front end. Last time I checked in with them they were still using the original version of this feature flagging system and were very happy with it. 
+This gem is inspired by a very similar system which myself and some fellow ThoughtWorkers created while building a Rails-based e-commerce front end at a large online retailer. Last time I checked in with that client they were still using their version of this feature flagging system and were very happy with it. 
 
 I [previously blogged about](/blog/2012/11/06/cookie-based-feature-flag-overrides/) the cookie-based approach which we used at that client and subsequenctly re-implemented in this rack-flags gem.
 
