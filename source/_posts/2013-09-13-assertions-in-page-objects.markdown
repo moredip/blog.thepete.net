@@ -8,11 +8,11 @@ categories:
 
 Martin Fowler recently added a [bliki entry for the Page Object pattern](http://martinfowler.com/bliki/PageObject.html). It's a good writeup - if you haven't read it I recommend doing so now. [Go ahead](http://martinfowler.com/bliki/PageObject.html). I'll wait.
 
-The entry sparked a discussion on an internal ThoughtWorks mailing list as to whether Page Objects should include assertions or not. In fact Martin mentions this difference of opinion in the bliki entry itself. I fell on the side of favoring page objects *with* assertions but couldn't come up with a compelling reason why until I was working on some Capybara-based page objects with a client QA today. 
+The entry sparked a discussion on an internal ThoughtWorks mailing list as to whether Page Objects should include assertions or not. In fact Martin mentions this difference of opinion in the bliki entry itself. I fell on the side of favoring page objects *with* assertions baked in but couldn't come up with a compelling reason why until I was working on some Capybara-based page objects with a client QA today. 
 
 ## TL;DR
 
-If you don't put assertions inside your page objects you are violating Tell Don't Ask, which in turn hinders the ability for your testing framework to do implicit spin asserts. 
+If you don't put assertions inside your page objects you are violating Tell Don't Ask, which in turn hinders the ability for your testing framework to do implicit spin asserts - a very valuable feature. 
 
 In the following I'll explain all of that in more detail.
 
@@ -33,13 +33,13 @@ On the other hand if I'm OK with assertions in my page object I would *Tell* my 
 bank_account_page.verify_has_listed_account_with_balance_of( 100.25 )
 ```
 
-This second example conforms to "[Tell Don't Ask](http://martinfowler.com/bliki/TellDontAsk.html)", the idea that it's more object-oriented to tell an object what you want than to ask it questions and then do the work yourself. However you could argue that it also violates [Single Responsibility Principle](http://www.codinghorror.com/blog/2007/03/curlys-law-do-one-thing.html) - my page object is now responsible for both abstracting over the page being tested and also performing assertions on that page's state.
+This second example conforms to [Tell Don't Ask](http://martinfowler.com/bliki/TellDontAsk.html), the idea that it's more object-oriented to tell an object what you want than to ask it questions and then do the work yourself. However you could argue that it also violates [Single Responsibility Principle](http://www.codinghorror.com/blog/2007/03/curlys-law-do-one-thing.html) - my page object is now responsible for both abstracting over the page being tested and also performing assertions on that page's state.
 
-At this point we see there are valid arguments both for and against the inclusion of assertions in our page objects. This is a good example of how software design is rarely about right and wrong, but almost always about trade-offs between different design choices. However today I realized that there's a feature of Capybara (and other similar UI testing frameworks) which in my opinion pushes the decision further towards complying with Tell Don't Ask and including the assertions in the page object.
+At this point we see there are valid arguments both for and against the inclusion of assertions in our page objects. This illustrates that software design is rarely about right and wrong, but almost always about trade-offs between different design choices. However today I realized that there's a feature of [Capybara](https://github.com/jnicklas/capybara) (and other similar UI testing frameworks) which in my opinion pushes the decision further towards complying with Tell Don't Ask and including the assertions in the page object.
 
 ## Spin Asserts
 
-[Spin Assert](http://sauceio.com/index.php/2011/04/how-to-lose-races-and-win-at-selenium/) is a very valuable UI automation pattern. It is used to avoid the fact that UI automation tests are often involved in *races* with the UI they are testing. 
+[Spin Assert](http://sauceio.com/index.php/2011/04/how-to-lose-races-and-win-at-selenium/) is a very valuable UI automation pattern. It is used to mitigate the fact that UI automation tests are often involved in *races* with the UI they are testing. 
 
 Let's continue using our account listing example. Imagine I have a test in which I transfer some money from my checking account to my savings account, and then test that the balances are listed correctly:
 
@@ -63,7 +63,7 @@ verify_funds( "Savings Account", 120.15 )
 
 Looks good. But what if the account balances take a while to update in the UI after the funds are transfered? My test might check that the checking account has a balance of 100.25 before the UI has had a chance to update. The test would see a balance of 200.25 instead of the 100.25, and thus the test would fail before the UI has had a chance to update to the correct state. The test has raced ahead of the UI, leading to an invalid test failure. 
 
-Spin Asserts deal with this by repeatedly checking for the expected state, rather than checking once and then instantly failing. Here's what a crude spin assert implementation might look like in a verify_funds implementation:
+Spin Asserts deal with this by repeatedly checking for the expected state, rather than checking once and then summarily failing. Here's what a crude spin assert implementation might look like in a `verify_funds` implementation:
 
 ``` ruby
 def verify_funds( account_name, account_balance )
@@ -75,7 +75,7 @@ def verify_funds( account_name, account_balance )
 end
 ```
 
-Here we just repeatedly search for an account with the expected name and balance, pausing briefly each time we loop. In a real spin assert implementation we would eventually time out and raise an exception to fail the test after spinning for a while.
+Here we just repeatedly search for an account with the expected name and balance, pausing briefly each time we loop. In a real spin assert implementation we would eventually time out and raise an exception to fail the test after spinning unsuccessfully for a while.
 
 ## Implicit Spin Asserts
 
@@ -86,15 +86,52 @@ When we tell Capybara "check that this node contains the text 'foo'" it will imp
 ``` ruby
 page.find(".container .blah").should have_content('foo')
 ```
-
-However, what if we instead *ask* Capybara for the current content of an HTML node and then do further checks ourselves?
+I think it's pretty neat that a spin assert is hidden in there for free. However what if we instead *ask* Capybara for the current content of an HTML node and then do further checks ourselves?
 ``` ruby
 page.find(".container .blah").text.should include('foo')
 ```
 
-This looks very similar, but now we're *asking* for `.text` instead of *telling* Capybara that we want the text to contain 'foo'. Capybara is required to return the full content of the node the instant we ask for `.text`, which robs it of the chance to do helpful implicit spin asserts it would do if we were telling it to check for 'foo'. By violating Tell Don't Ask we've forced Capybara to expose state and prevented it from enhancing that state with value-add behavior.
+This looks very similar, but now we're *asking* for `.text` instead of *telling* Capybara that we want the text to contain 'foo'. Capybara is required to return the full content of the node the instant we ask for `.text`, which robs it of the chance to do the helpful implicit spin asserts it could do if we were telling it to check for 'foo'. 
+
+By violating Tell Don't Ask we've forced Capybara to expose state and prevented it from enhancing that state with value-add behavior.
 
 ## Page Objects should include Assertions
 
-Hopefully you can see where I'm heading by now. If our example account listing page object includes its own assertions then we can *tell* the page object "verify that there is a checking account with a balance of 100.25". The page object is free to internally use spin asserts while verifying that assertion. If we don't allow page objects to include assertions then we are required to verify the page state ourselves, which would mean we'd need to do implement our own spin asserts, and often wouldn't be able to take advantage of the free implicit spin asserts provided by Capybara.
+Hopefully you can see where I'm heading by now. If our example account listing page object includes its own assertions then we can *tell* the page object "verify that there is a checking account with a balance of 100.25". The page object is free to internally use spin asserts while verifying that assertion. If we don't include assertions within our page objects then we are required to verify the page state externally. This would mean we'd need to do implement our own spin asserts, and often wouldn't be able to take advantage of the free implicit spin asserts provided by Capybara. An example which highlights the difference this can make is asserting that we're on the correct page by checking the page title. 
 
+With internal assertions in our page object:
+``` ruby
+class SomePageObject
+  #...
+
+  def verify_page_title
+    page.should have_title "The Page Title"
+  end
+end
+
+#...
+
+some_page.verify_page_title
+```
+
+As opposed to external assertions:
+
+``` ruby
+class SomePageObject
+  #...
+
+  def has_correct_page_title?
+    page.title == "The Page Title"
+  end
+end
+
+#...
+
+spin_assert{ some_page.has_correct_page_title? }
+```
+
+In the first example we get Capybara's implicit spin asserts for free. In the second example we're required to do our own explicit spin assert every time we want to verify the page has the right title. Overly verbose and prone to error.
+
+## Tell Don't Ask allows value-add behavior
+
+There are other advantages we get by including assertions in our page objects (for example better assertion failure messages), but for me the ability to leverage implicit spin asserts is the big win. At the end of the day it means that a page object can present a higher level of abstraction in its public interface, adding value underneath. Yes, we're weaker on Single Responsibility, but overall I think it's a good tradeoff.
