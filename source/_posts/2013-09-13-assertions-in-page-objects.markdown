@@ -33,7 +33,7 @@ On the other hand if I'm OK with assertions in my page object I would *Tell* my 
 bank_account_page.verify_has_listed_account_with_balance_of( 100.25 )
 ```
 
-This second example conforms to [Tell Don't Ask](http://martinfowler.com/bliki/TellDontAsk.html), the idea that it's more object-oriented to tell an object what you want than to ask it questions and then do the work yourself. However you could argue that it also violates [Single Responsibility Principle](http://www.codinghorror.com/blog/2007/03/curlys-law-do-one-thing.html) - my page object is now responsible for both abstracting over the page being tested and also performing assertions on that page's state.
+This second example conforms to [Tell Don't Ask](http://martinfowler.com/bliki/TellDontAsk.html), the idea that it's more object-oriented to *tell* an object what you want it to do, rather than to *ask* it questions about its state and then do the work yourself. However you could argue that the second page object example with embedded assertions also violates the [Single Responsibility Principle](http://www.codinghorror.com/blog/2007/03/curlys-law-do-one-thing.html) - my page object is now responsible for both abstracting over the page being tested and also performing assertions on that page's state.
 
 At this point we see there are valid arguments both for and against the inclusion of assertions in our page objects. This illustrates that software design is rarely about right and wrong, but almost always about trade-offs between different design choices. However today I realized that there's a feature of [Capybara](https://github.com/jnicklas/capybara) (and other similar UI testing frameworks) which in my opinion pushes the decision further towards complying with Tell Don't Ask and including the assertions in the page object.
 
@@ -44,12 +44,11 @@ At this point we see there are valid arguments both for and against the inclusio
 Let's continue using our account listing example. Imagine I have a test in which I transfer some money from my checking account to my savings account, and then test that the balances are listed correctly:
 
 ``` ruby
-def verify_funds( account_name, account_balance )
+def verify_funds( name, balance )
   accounts = bank_account_page.listed_accounts
-  accounts.find{ |x| x[:name] == account_name && x[:balance] == account_balance }.should_not be_null
+  accounts.find{ |x| x[:name] == name && x[:balance] == balance }.should_not be_nil
 end
 
-#...
 #...
 
 verify_funds( "Checking Account", 200.25 )
@@ -66,10 +65,10 @@ Looks good. But what if the account balances take a while to update in the UI af
 Spin Asserts deal with this by repeatedly checking for the expected state, rather than checking once and then summarily failing. Here's what a crude spin assert implementation might look like in a `verify_funds` implementation:
 
 ``` ruby
-def verify_funds( account_name, account_balance )
+def verify_funds( name, balance )
   loop do 
     accounts = bank_account_page.listed_accounts
-    break if accounts.find{ |x| x[:name] == account_name && x[:balance] == account_balance }
+    break if accounts.find{ |x| x[:name] == name && x[:balance] == balance }
     sleep 0.1
   end
 end
@@ -79,9 +78,9 @@ Here we just repeatedly search for an account with the expected name and balance
 
 ## Implicit Spin Asserts
 
-Spin Asserts are such a valuable technique that they is build into a lot of web automation tools. In fact a lot of web automation tools will do a spin assert even without you being aware of it. In Selenium/WebDriver this is referred to as ['implicit waits'](http://docs.seleniumhq.org/docs/04_webdriver_advanced.jsp), and Capybara does the same thing. 
+Spin Asserts are such a valuable technique that they is build into a lot of web automation tools. In fact a lot of web automation tools will do a spin assert without you even being aware of it. In Selenium/WebDriver this is referred to as ['implicit waits'](http://docs.seleniumhq.org/docs/04_webdriver_advanced.jsp), and Capybara does the same thing. 
 
-When we tell Capybara "check that this node contains the text 'foo'" it will implicitly perform that check using a spin assert. It will repeatedly check the state of the UI until either the node in question contains the text 'foo' or the spin assert times out. Here's what that assertion might look like:
+When we tell Capybara "check that this HTML node contains the text 'foo'" it will implicitly perform that check using a spin assert. It will repeatedly check the state of the UI until either the node in question contains the text 'foo' or the spin assert times out. Here's what that assertion might look like:
 
 ``` ruby
 page.find(".container .blah").should have_content('foo')
@@ -91,9 +90,9 @@ I think it's pretty neat that a spin assert is hidden in there for free. However
 page.find(".container .blah").text.should include('foo')
 ```
 
-This looks very similar, but now we're *asking* for `.text` instead of *telling* Capybara that we want the text to contain 'foo'. Capybara is required to return the full content of the node the instant we ask for `.text`, which robs it of the chance to do the helpful implicit spin asserts it could do if we were telling it to check for 'foo'. 
+This looks very similar, but now we're *asking* for `.text` instead of *telling* Capybara that we want the text to contain 'foo'. Capybara is required to return the full content of the node at the instant we ask for `.text`, which robs it of the chance to do the helpful implicit spin asserts it could do if we were telling it to check for 'foo'. 
 
-By violating Tell Don't Ask we've forced Capybara to expose state and prevented it from enhancing that state with value-add behavior.
+By violating Tell Don't Ask we're reducing Capybara role to dumbly exposing state and prevented it from enhancing that state with value-add behavior.
 
 ## Page Objects should include Assertions
 
@@ -130,8 +129,8 @@ end
 spin_assert{ some_page.has_correct_page_title? }
 ```
 
-In the first example we get Capybara's implicit spin asserts for free. In the second example we're required to do our own explicit spin assert every time we want to verify the page has the right title. Overly verbose and prone to error.
+In the first example we get Capybara's implicit spin asserts for free. In the second example not only are we're required to do our own explicit spin assert, but we're required to do so every time we want to verify the page has the right title. Overly verbose and prone to error.
 
 ## Tell Don't Ask allows value-add behavior
 
-There are other advantages we get by including assertions in our page objects (for example better assertion failure messages), but for me the ability to leverage implicit spin asserts is the big win. At the end of the day it means that a page object can present a higher level of abstraction in its public interface, adding value underneath. Yes, we're weaker on Single Responsibility, but overall I think it's a good tradeoff.
+There are other advantages we get from including assertions in our page objects (for example better assertion failure messages), but for me the ability to leverage implicit spin asserts is the big win. At the end of the day it means that a page object can present a higher level of abstraction in its public interface, adding value underneath. Yes, we're weaker on Single Responsibility, but overall I think it's a good tradeoff.
