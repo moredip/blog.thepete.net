@@ -9,8 +9,10 @@ PREPROD_MARKER_BRANCH='pre-blog'
 candidate_rev = ARGV[0] || 'HEAD'
 
 unless GitHelper.is_fast_forward( PREPROD_MARKER_BRANCH, candidate_rev )
-  puts "sorry, #{PREPROD_MARKER_BRANCH} can't be fast-forwarded to #{candidate_rev}"
-  exit 1
+  puts "WARNING: #{PREPROD_MARKER_BRANCH} can't be fast-forwarded to #{candidate_rev}"
+  puts "Hit Ctrl-C to abort the mission. Hit return to continue on regardless."
+  STDIN.getc
+  puts "Rodger dodger, continuing with the mission."
 end
 
 distance = GitHelper.distance_between_revs( PREPROD_MARKER_BRANCH, candidate_rev )
@@ -24,4 +26,4 @@ end
 
 Deployer.deploy_to_bucket_from_commit( BUCKET_NAME, candidate_rev )
 `git branch -f #{PREPROD_MARKER_BRANCH} #{candidate_rev}`
-`git push origin #{PREPROD_MARKER_BRANCH}:#{PREPROD_MARKER_BRANCH}`
+`git push --force origin #{PREPROD_MARKER_BRANCH}:#{PREPROD_MARKER_BRANCH}`
