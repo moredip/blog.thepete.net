@@ -21,7 +21,7 @@ This is a pretty simple piece of electronics. In terms of components we have:
 * a **12 volt computer fan** (sometimes called a squirrel fan or muffin fan) liberated from an old computer
 * a **9 volt DC power supply** which I scavenged from somewhere (note **NOT** 12V, which would spin the fan too fast for our purposes)
 * a $3 [**panel mount barrel jack**](https://www.adafruit.com/products/610) for the power supply
-* a **panel mount potentiometer, plus knob** (maybe $2?) to act as a voltage divider to control the fan's speed
+* a **panel mount 25 ohm potentiometer, plus knob** (maybe $2?) to act as a voltage divider to control the fan's speed
 * a $0.50 [**panel mount switch**](https://www.sparkfun.com/products/11138) for a power switch
 * a **steel washer** which I hot-glued to the computer fan
 * two [**rare-earth magnets**](http://www.homedepot.com/p/Master-Magnetics-1-2-in-Neodymium-Rare-Earth-Magnet-Discs-6-per-Pack-07046HD/202526367) ($4 for 6), which are stuck to that washer just with magnetism. 
