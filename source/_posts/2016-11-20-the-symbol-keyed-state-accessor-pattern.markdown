@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 
-In this post I'll show three different techniques for encapsulating internal state in JavaScript, concluding with my prefered approach, a pattern I'm calling "Symbol-keyed State Accessor".
+In this post I'll show three different techniques for encapsulating internal state in JavaScript, concluding with my preferred approach, a pattern I'm calling "Symbol-keyed State Accessor".
 
 I was in a discussion about how to implement the Value Object pattern in JavaScript recently. Most of the examples folks were proposing involved a prototypical approach to OOO, using either `class` or `prototype` to create a Value Object type, and managing the object's internal state via `this`. Here's how one might build the basics of a `Money` Value Object in that style:
 
