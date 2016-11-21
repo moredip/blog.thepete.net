@@ -66,13 +66,17 @@ module.exports = function Money(_amount,_currency){
 
 This is mostly a vanilla example of how to build a type in JavaScript without using prototypical inheritance. Again, something [I've discussed in depth previously](http://radar.oreilly.com/2014/03/javascript-without-the-this.html). However there is one wrinkle here. Usually I would want to avoid exposing a Money instance's internal state at all - one of the big advantages of the closure-based approach is the encapsulation it provides by preventing direct access to internal state. However in order to implement the `equals(...)` method we need some way to compare our state to another Money's state, which means we have to expose that state somehow. In this example I enabled this by adding a `_getState()` method. The leading underscore is a common (if ugly) convention used to indicate that this is not part of the type's public API. We saw a similar convention in our first class-based example too.
 
-Having to use a leading underscore is exactly the sort of thing that I dislike about `this`-based JavaScript code. Unfortunately it didn't seem to be avoidable here, even with a closure-based approach that doesn't use `this` at all. As I was contemplating this sad outcome I turned to considering how other languages handle this. Most object-oriented languages provide the ability to explicitly mark parts of an API as private or internal; only accessible to an instance of the same class. Javascript is missing this feature, but with a `this`-less approach we can mostly fake it using lexical scoping to prevent access outside the scope of the closure which defines a type. Unfortunately this protection is too strong in this case - it prevents other instances of the same type from accessing a private API. That led to us having to resort to naming things with leading underscores, hoping to persuade consumers of this type to not bypass our public API. In my experience this hope turns out to be overly optimistic in the face of engineers with a tight deadline and a somewhat unrealistic belief that they'll "come back and fix this later".
+## Hope is not a strategy
+
+Having to use a leading underscore is exactly the sort of thing that I dislike about `this`-based JavaScript code. Unfortunately it didn't seem to be avoidable here, even with a closure-based approach that doesn't use `this` at all. Let's unpack that a bit. Most object-oriented languages provide the ability to explicitly mark parts of an API as private or internal; only accessible to an instance of the same class. Javascript is missing this feature, which has led to a lot of folks faking it, resorting to techniques like naming things with leading underscores in the hopes of persuading consumers to not bypass our public API. Unfortunately in my experience this hope turns out to be a little naive in the face of engineers with a tight deadline and a somewhat optimistic belief that they'll "come back and fix this later".
+
+A big reason for me prefering closures over `this` is that we can mostly demarcate internal state and behaviour by using lexical scoping. This prevents any access to internals from outside the scope of the closure which instantiates an object. We can usually avoid reliance on hope as a strategy. Unfortunately this protection is too strong in this case - it prevents other instances of the _same type_ from accessing a private API, since they are outside the lexical scope of the closure which created the instance. And thus I had to fall back to exposing state but marking it as internal with that leading underscore.
 
 ## Symbol-keyed properties
 
 What I needed was some way to expose state to other instances of the same type but to nothing else. Eventually I remembered that JavaScript gained a new feature in ES6 that was designed for just this scenario - [the Symbol type](https://hacks.mozilla.org/2015/06/es6-in-depth-symbols/). 
 
-When a property is added to an object using a Symbol as a key - a _symbol-keyed property_ - it doesn't show up in things like `for .. in` loops, or in calls to `Object.keys()` or `Object.getOwnPropertyNames()`. It's also (almost) impossible to access a symbol-keyed property if you don't have access to the Symbol itself. We can take advantage of this feature along with JavaScript's lexical scoping rules to create an encapsulated object property which is only accessible by code in the same lexical scope as the code that created the property. 
+When a property is added to an object using a Symbol as a key - a _symbol-keyed property_ - it doesn't show up in things like `for .. in` loops, or in calls to `Object.keys()` or `Object.getOwnPropertyNames()`. It's also (almost) impossible to access a symbol-keyed property if you don't have access to the Symbol itself. We can take advantage of this feature along with JavaScript's lexical scoping rules to create an encapsulated object property which is only accessible by code which shares a lexical scope with the Symbol which keys the encapsulated property.
 
 Here's how we leverage this to implement a better version of our Money type:
 
@@ -111,9 +115,9 @@ module.exports = function Money(_amount,_currency){
 }
 ```
 
-Note that *within this file* anything can access a Money instance's state using the `stateFrom()` function, which in turn uses the `stateAccessor` symbol. We use `stateFrom()` in `equals(other)` to access the other Money instance's state. However outside of this file there is no way to access either `stateFrom` or `stateAccessor` (due to lexical scoping), and therefore no way to access a Money instance's internal state.
+Note that *within this file* anything can access any Money instance's state using the `stateFrom()` function, which in turn uses the `stateAccessor` symbol. You can see that we use `stateFrom()` in `equals(other)` to access the other Money instance's state. However outside of this file there is no way to access either `stateFrom` or `stateAccessor` (due to lexical scoping), and therefore no way to access any Money instance's internal state.
 
-## Addendum
+## Well, actually
 Technically in some cases you *can* access a symbol-keyed property without access to the original symbol, but it's pretty dirty:
 
 ``` javascript hackery.js
