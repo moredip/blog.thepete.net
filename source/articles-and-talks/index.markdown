@@ -21,7 +21,7 @@ Using closures in a different way...
 
 Segregated DOM makes for a maintainable JavaScript codebase...
 
-**In Praise of the ./go Script**, on thoughtworks.com in ([two](https://www.thoughtworks.com/insights/blog/praise-go-script-part-i) [parts](https://www.thoughtworks.com/insights/blog/praise-go-script-part-ii))
+**In Praise of the ./go Script**, on thoughtworks.com in [two](https://www.thoughtworks.com/insights/blog/praise-go-script-part-i) [parts](https://www.thoughtworks.com/insights/blog/praise-go-script-part-ii)
 
 Any self-respecting dev team should pay attention to automate their processes and conventions with an array of tooling, be it off-the-shelf, customized and fully bespoke. This is where a lot of teams stop, which is a shame. It's great to have the tooling you need, but if you don't organize your workshop so that everything is at hand you're not going to be as effective as you could be. Teams can get a lot more out of their automation by unifying all of their tools and processes under a common interface - the ./go script.
 
@@ -36,8 +36,8 @@ Any self-respecting dev team should pay attention to automate their processes an
 _Slides from my public presentations are published on [speakerdeck](https://speakerdeck.com/phodgson)_
 
 #### Functional reactive JavaScript on the client and the server - Fluent 2016
-[overview](https://www.safaribooksonline.com/library/view/fluent-2016-/9781491944585/part24.html)
-[video](https://www.safaribooksonline.com/library/view/fluent-2016-/9781491944585/video241446.html)
+[overview](https://www.safaribooksonline.com/library/view/fluent-2016-/9781491944585/)
+[video](https://www.safaribooksonline.com/library/view/fluent-2016-/9781491944585/part24.html)
 
 #### Test-driven client-side apps - ForwardJS 2015
 [video](https://forwardcourses.com/lectures/33)
