@@ -8,6 +8,8 @@ categories:
 
 As a founding engineer at a new startup you are confronted on a daily basis with decisions which can have a huge impact on your ability to get a product build ASAP while still supporting what comes after the MVP. In this article I will present 3 core maxims which can help guide your decision making. We'll discuss each maxim along with some more concrete rules of thumb that emerge when you follow these maxims.
 
+We'll start with my first maxim - "You'll Never Know Less Than You Know Right Now". In later posts I'll cover the other two: "Optimize For Iteration" and "Boring Is Good". 
+
 ## Maxim 1: You'll Never Know Less Than You Know Right Now
 The very nature of a startup is an exploration of unknown terrain. What appears to be a sure fire hit today will turn out to be a dud in a month's time. What seems like an unimportant detail this week may end up being a core part of your product next year. To succeed in this environment you must embrace the fact that you're operating with very limited knowledge of what the future holds, and act accordingly.
 
@@ -29,11 +31,9 @@ Engineers have a strong desire to build generalized abstractions. But remember, 
 That said, it is important to have an awareness for where you think you're going. Let's say you're building out user notifications. You're starting with email today, but you "know" you'll be asked to support SMS and in-app notifications soon. You should **not** build the SMS and in-app notification capability until you actually need it, but you should certainly build the email notifications in a reasonably abstract way so that you can enhance it to support other channels once you get to SMS and in-app. Even if you try to get the abstraction right you will very likely still need to tweak it once you actually build the other channels, but you'll have the right seams in place to make those small modifications relatively easy.
 
 ### Design for 10x, consider 100x, don't support 1000x
-**TODO**
-[Google does this](http://static.googleusercontent.com/media/research.google.com/en//people/jeff/WSDM09-keynote.pdf)
+When deciding on a technical approach it's important to plan for growth, but you must keep in mind that there are very real tradeoffs when you design for scale. The same feature will cost more to develop and more to operate in an architecture that can service 1000 transactions a second than one that can service 10 transactions a second. [Google's approach](http://static.googleusercontent.com/media/research.google.com/en//people/jeff/WSDM09-keynote.pdf) is to design for 10x your current scale, but expect to rewrite before you hit 100x. 
 
-
-
+This doesn't mean you shouldn't think about the 100x scenario - you should consider it - but you should not expect to be able to predict what your 100x architecture will look. You'll never know less than you do now, remember. Your consideration should be in building a modular architecture where you can pull out the part that isn't scaling and replace it with a more scalable design without massive impact on the rest of your system. 
 
 ## Maxim 2: Optimize for iteration
 An early-stage startup needs to be able to build, learn and course-correct over and over again. The most important attribute of your architecture and engineering process is how nimble it allows you to be, where nimble isn't necessarily the same as efficient. Nimble means we have great visibility into how our product is being used, and can change our product vision frequently without causing a lot of waste. Your startup is negotiating unclear terrain without much visibility into the future. You want to provide a rally car that has a clear windscreen and can handle sudden turns and shifts in terrain. You do not want to provide a drag racer which goes really fast but can't make any turns once the race has started.
@@ -42,6 +42,9 @@ Optimizing for iteration is a "scale-free" maxim. You can apply it at a very low
 
 ### Work in small batches
 Focusing on quick iteration means not batching up large chunks of work in pursuit of a perceived efficiency gain. Rather than waiting to build all 4 screens of your mobile app and then releasing to the app store, just build the first screen and release it. This reduces the time before you get feedback on what you've built so far. You'd be surprised how many times the initial review of an app uncovers an issue that is cheap to fix when you have one screen built, but 4 times more expensive if you have 4 screens built. This doesn't just apply to mobile apps. Getting a "hello world" version of your web app out into a production environment - and starting to build out the delivery pipeline that will get it there - allows you to start optimizing your delivery capability, which again allows you to optimize how quickly you can iterate on an idea and course-correct as necessary. Your goal should be to get comfortable *as soon as possible* with constantly releasing small iterative improvements into production.
+
+### You need to measure in order to validate
+**TODO**
 
 ### Modular disposability
 **TODO**
@@ -61,10 +64,14 @@ The place to consider using shiny technology is where it's needed as part of you
 
 The other reason to use cutting-edge tech is if it will truly allow you to iterate faster. Perhaps you're convinced that building your mobile app in React Native will get you to market quicker, or allow you to deliver new releases quicker than a native Swift app. In that case, go for it. But again, try to keep your biases in check. Play devil's advocate for a moment and sketch out what a solution would look like in a more established technology and whether it would truly be more expensive.
 
-
 ### Buy what you can, build what you must.
 The reason modern tech startups can do so much with so little comes down to the fact that what we used to have to build we can now buy. Instead of racking up servers and configuring networking gear we now click a few buttons in AWS (or even better run a declarative infrastructure-as-code tool like Terraform). When you're dealing with extremely limited resources it only makes sense to build something yourself if you really have to. This boils down to only building things if they are your product differentiator - and even then you are usually "building" by assembling open-source tools. 
 
 If you're building something that isn't unique to your product, challenge yourself as to why. Why are you building user login when you could use Auth0 or Stormpath. Why are you hand-rolling your marketing pages when you could be using a Wordpress installation? Why are you standing up a kubernetes cluster when you could be deploying on Heroku? Why are you managing your own databases when you could be using a host DB-as-a-Service? Sometimes there are good reasons to build, but when we are really honest with ourselves sometimes we're building rather than buying because it's fun to play with shiny toys. One way to keep yourself honest is to consider the opportunity cost - ask yourself what more product-differentiating feature you could be working on if you were to buy the thing you're about to start building.
 
 Some places where you should probably be defaulting to Buy rather than Build - at least in the early days of your product - include using a stock CMS for non-product pages, using a PaaS like Heroku for deployment, and using a hosted data store.
+
+### Look beyond your experience
+Don't forget to be humble and look outside the technology ecosystem you're comfortable with when assessing whether you should build something or buy it. When Twitter were first working through breaking apart their monolithic Rails system one of the first things they did was introduce asynchronous queues between systems - a very sound scaling decision. Unfortunately the Ruby ecosystem didn't have any great distributed queues at the time, and so Twitter engineers decided to [implement their own](https://github.com/starling/starling) using the technology they were comfortable with - Ruby. Hindsight being 20/20, they might have endured a few less fail whales if they had picked an existing distributed messaging technology that had already been proven to operate at the scale they needed.
+
+If you need to add search to your Golang-based product, consider ElasticSearch before you start building your own inverted search index in Golang. If you're Scala product needs a rich web client, consider React and ES6 before you start building a cool UI framework in Scala.js.
