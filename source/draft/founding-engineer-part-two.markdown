@@ -1,39 +1,14 @@
 ---
 layout: post
-title: "Advice for the Founding Engineer"
+title: "Advice for the Founding Engineer - Maxim #2"
 date: 2017-03-16 05:11
 comments: true
 categories: 
 ---
 
-As a founding engineer at a new startup you are confronted on a daily basis with decisions which can have a huge impact on your ability to get a product build ASAP while still supporting what comes after the MVP. In this article I will present 3 core maxims which can help guide your decision making. We'll discuss each maxim along with some more concrete rules of thumb that emerge when you follow these maxims.
+As a founding engineer at a new startup you are tasked with getting an initial product out of the door ASAP while still supporting what comes after the MVP. Those two goals are somewhat in tension, and you are confronted on a daily basis with decisions that often involve finding the right balance between the two. I've condensed my opinions on how to succeed as a founding engineer into 3 core maxims which can help guide your decision making. In this series of posts I introduce each maxim along with discussion of some more concrete rules of thumb that emerge when you follow these maxims.
 
-We'll start with my first maxim - "You'll Never Know Less Than You Know Right Now". In later posts I'll cover the other two: "Optimize For Iteration" and "Boring Is Good". 
-
-## Maxim 1: You'll Never Know Less Than You Know Right Now
-The very nature of a startup is an exploration of unknown terrain. What appears to be a sure fire hit today will turn out to be a dud in a month's time. What seems like an unimportant detail this week may end up being a core part of your product next year. To succeed in this environment you must embrace the fact that you're operating with very limited knowledge of what the future holds, and act accordingly.
-
-### Be humble.
-As a founding engineer you are almost certainly doing things you've never done before, while at the same time operating in uncertain terrain. You *will* make mistakes rooted in second order ignorance - not knowing what you don't know. Embrace that and try to minimize the risk by building up resources that you can humbly seek advice from. Experts in your network, company advisors, a technical mentor, your co-workers, a consultant guru. All of the above can help you validate your thinking and point out when you're drifting into [Dunning-Kruger](http://rationalwiki.org/wiki/Dunning-Kruger_effect) territory. It's one thing to be a novice driver, it's quite another to be a novice driver who thinks they're an expert. There is a very real risk of wasting a lot of time using the wrong tool for the job. If you don't validate your decisions you won't know you're using the wrong tool.
-
-When you're aware that you're operating in an area where you don't have much experience don't be afraid to pull in expert assistance. If your MVP requires a rules engine and you've never worked with a rules engine before, find a hired gun who can build out an initial version and teach you the ropes at the same time. Don't stubbornly beat your head against a wall learning everything from first principles when an expert could do a much better job in 1/10th of the time.
-
-### Pull risk forward.
-There will be some areas of your product where there is inherent uncertainty around picking the right approach. For example building out an integration with a 3rd party service provider that you've not worked with before, or an algorithm that needs to be invented and refined. Do what you can to do at least some work on these uncertain areas first. This allows you to move from an uncertain risk - "we don't really know how hard this will be" - to a (roughly) scoped risk - "it is probably going to take about 6 weeks to get a legit implementation of this". In a startup where many things about the future are uncertain there is a lot of value in reducing the uncertainty where you can. This is the architectural equivalent to validating your product hypothesis by building a minimal version of the product. Validate your technical hypothesis as soon as you can by pulling forward implementation of that piece of tech.
-
-When prioritizing product features, take technical risk into account. Consider pulling forward a feature if it allows you to explore uncertain technical terrain, get an initial 3rd party integration up and running, or validate a critical assumption that you are basing other big technical decisions upon.
-
-Consider doing "spikes" of throw-away work to explore uncertain technical terrain. Keeping the work a throw-away prototype allows you to go fast and maximize for learning. Once you're done exploring don't get stuck in a sunk-cost fallacy and attempt to turn your prototype into your product. When you build it a second time it'll be much more robust and you'll build it in less than half the time with the experience you gained from the spike.
-
-### Build for now, keep an eye on what's coming
-Engineers have a strong desire to build generalized abstractions. But remember, you are in a deeply uncertain world. Embrace the fact that you'll never know less than you know right now. Resist the urge to build what you "know" you are going to need in 3 months time. 3 months is a very long time in startup land. If you build something now because you "know" you'll need it in the future you will be paying various costs now on the basis of an uncertain return on investment. Defer the cost by deferring the decision to build.
-
-That said, it is important to have an awareness for where you think you're going. Let's say you're building out user notifications. You're starting with email today, but you "know" you'll be asked to support SMS and in-app notifications soon. You should **not** build the SMS and in-app notification capability until you actually need it, but you should certainly build the email notifications in a reasonably abstract way so that you can enhance it to support other channels once you get to SMS and in-app. Even if you try to get the abstraction right you will very likely still need to tweak it once you actually build the other channels, but you'll have the right seams in place to make those small modifications relatively easy.
-
-### Design for 10x, consider 100x, don't support 1000x
-When deciding on a technical approach it's important to plan for growth, but you must keep in mind that there are very real tradeoffs when you design for scale. The same feature will cost more to develop and more to operate in an architecture that can service 1000 transactions a second than one that can service 10 transactions a second. [Google's approach](http://static.googleusercontent.com/media/research.google.com/en//people/jeff/WSDM09-keynote.pdf) is to design for 10x your current scale, but expect to rewrite before you hit 100x. 
-
-This doesn't mean you shouldn't think about the 100x scenario - you should consider it - but you should not expect to be able to predict what your 100x architecture will look. You'll never know less than you do now, remember. Your consideration should be in building a modular architecture where you can pull out the part that isn't scaling and replace it with a more scalable design without massive impact on the rest of your system. 
+In the first post in the series I introduced with my first maxim - "You'll Never Know Less Than You Know Right Now". In this post I'll cover maxim 2 - "Optimize For Iteration". In an upcoming post I'll talk about the final maxim - "Boring Is Good". 
 
 ## Maxim 2: Optimize for iteration
 An early-stage startup needs to be able to build, learn and course-correct over and over again. The most important attribute of your architecture and engineering process is how nimble it allows you to be, where nimble isn't necessarily the same as efficient. Nimble means we have great visibility into how our product is being used, and can change our product vision frequently without causing a lot of waste. Your startup is negotiating unclear terrain without much visibility into the future. You want to provide a rally car that has a clear windscreen and can handle sudden turns and shifts in terrain. You do not want to provide a drag racer which goes really fast but can't make any turns once the race has started.
@@ -75,3 +50,7 @@ Some places where you should probably be defaulting to Buy rather than Build - a
 Don't forget to be humble and look outside the technology ecosystem you're comfortable with when assessing whether you should build something or buy it. When Twitter were first working through breaking apart their monolithic Rails system one of the first things they did was introduce asynchronous queues between systems - a very sound scaling decision. Unfortunately the Ruby ecosystem didn't have any great distributed queues at the time, and so Twitter engineers decided to [implement their own](https://github.com/starling/starling) using the technology they were comfortable with - Ruby. Hindsight being 20/20, they might have endured a few less fail whales if they had picked an existing distributed messaging technology that had already been proven to operate at the scale they needed.
 
 If you need to add search to your Golang-based product, consider ElasticSearch before you start building your own inverted search index in Golang. If you're Scala product needs a rich web client, consider React and ES6 before you start building a cool UI framework in Scala.js.
+
+## Stay tuned for more
+
+This post covered my second maxim - "Optimize For Iteration". Next up in the series I'll talk about my final maxim - "Boring Is Good". [Follow me on twitter](https://twitter.com/ph1) or subscribe to the [blog feed](/atom.xml) to be updated as I publish the rest of the series.
