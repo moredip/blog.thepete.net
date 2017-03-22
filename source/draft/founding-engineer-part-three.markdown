@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Advice for the Founding Engineer - Maxim #3"
+title: "Advice for the Founding Engineer, part 3"
 date: 2017-03-16 05:11
 comments: true
 categories: 
