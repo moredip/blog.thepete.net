@@ -6,6 +6,8 @@ comments: true
 categories: 
 ---
 
+The testing ecosystem in JavaScript today is full of tools which keep re-inventing the same wheel - Matchers. If we can extract this concept from individual tools into a general abstraction we can focus energy to build a much more expressive API, and provide a common ground for re-use and extension. Read on to find out why.
+
 ### Matchers when making assertions
 
 Unit-testing JavaScript code means making assertions about the shape of things. We make simple assertions like `expect(result).to.eql("SUCCESS")` all the time. We often make slightly more complex assertions like `expect(result).to.have.property('resultType','SUCCESS')` or `expect(result.count).to.be.above(0)`. Some tools allow us to make even more sophisticated assertions like:
