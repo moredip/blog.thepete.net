@@ -65,15 +65,18 @@ Let's say I write a bunch of tests against an API client. I'm sick of writing te
   expect(query).toHaveProperty('orig','some-abbr');
 ```
 
-Instead I want to create an extension to my testing tooling so I can write:
+Instead I want to create an extension to my testing tooling so I can write something along the lines of:
 ```
-  const requestedUrl = url.parse(fetchMock.lastUrl());
-  expect(requestUrl).toHaveHostAndPath('api.bart.gov','/api/etd.aspx');
-  expect(requestUrl).toIncludeQueryParams({
-    cmd: 'etd',
-    key: expect.anyString(),
-    orig: 'some-abbr'
-  });
+  expect(fetchMock.lastUrl()).matches(
+    aUrl()
+      .withHost('api.bart.gov')
+      .withPath('/api/etd.aspx')
+      .includingQueryParams({
+        cmd: 'etd',
+        key: anyString(),
+        orig: 'some-abbr'
+      })
+  );
 ```  
 I might well want to also use a similar abstraction to configure a mock function - "when you're called with a URL where the query parameter `cmd` is `etd`, return a list of ETDS. When you're called with a query parameter `cmd` of `stations`, return a list of stations". Unfortunately since every tool uses its own matcher implementation I would get very litte code reuse between those two extensions.
 
