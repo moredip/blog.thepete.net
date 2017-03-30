@@ -97,3 +97,137 @@ This is a huge win in terms of expressivity. Our tests become a lot more declara
 Introducing a shared abstraction around matching would provide a lift similar to the lift we got with Promises. Promises took a *concept* - an async operation with an errback and a callback - and turned it into a concrete thing you could work with in code via a standardized API. That meant we could start composing these things together - e.g. `Promise.all()`- and we could start writing libraries that extended their capabilities - e.g. instrumenting a promise with logging, building coroutine implementations. By formalizing the concept of a matcher we can create a standard API for a general concept and start sharing innovations and tooling built on top of it. Consider the example I gave early in this article around using matchers to assert async results. That's a great example of where we leverage the benefits of two standardized abstractions (matchers and Promises). We can take any type of async operation, and apply any type of matcher against it. And whatever matcher we apply does not need to have any awareness of the async-ness of the result. This is a nice example of two [simple](https://www.infoq.com/presentations/Simple-Made-Easy) concepts implemented orthogonally such that they be combined cleanly.
 
 The road to a standardized Promises API started with Q (I think?), and became generalized via the [Promises/A+](https://promisesaplus.com/) spec. I'm certainly not proposing that we should shoot for a standardized spec for matchers, but I think if we created a high-quality standalone matcher library and made it easy to plug into the existing test ecosystem then we could see some big wins.
+
+## An illustrative sketch 
+
+Here's some before and after to illustrate how some tests of an imaginary JSON API client might change if they had a common matcher library available.
+
+Today we might have a test like this:
+``` javascript
+it('returns a user when given a legit id', function () {
+  const theUserId = '1234';
+  return apiClient.getUser(theUserId).then(function (result) {
+    expect(result).to.have.property('found',true);
+    expect(result).to.have.property('user');
+    expect(result.user).to.have.property('id',theUserId);
+    expect(result.user).to.have.property('firstName').a('string');
+    expect(result.user).to.have.property('lastName').a('string');
+  });
+});
+
+```
+
+With our matcher library we can turn that series of assertions into one expressive matcher spec:
+```
+it('returns a user when given a legit id', function () {
+  const theUserId = '1234';
+  const expectedResult = M.objectWith({
+    found: true,
+    user: M.objectWith({
+      id: theUserId,
+      firstName: M.ofType("string"),
+      lastName: M.ofType("string")
+    })
+  });
+
+  return apiClient.getUser(theUserId)
+  .then(function (user) {
+    expect(user).to.match(expectedResult)
+  });
+});
+```
+
+Here we're leveraging composability to build a reasonably complex matcher for a complex object, assembling the matcher out of a series of component matchers. And because our matcher has a lot more context about the thing it's asserting against it will be able to give much richer error messages. 
+
+But wait, there's more! Since this is a general purpose library, we can go further and use the same syntax to express an expectation for an async result:
+
+```
+it('returns a user when given a legit id', function () {
+  const theUserId = '1234';
+  
+  const result = apiClient.getUser(theUserId);
+  return expect(result).to.eventually.match(M.objectWith({
+    found: true,
+    user: M.objectWith({
+      id: theUserId,
+      firstName: M.ofType("string"),
+      lastName: M.ofType("string")
+    })
+  }));
+});
+```
+
+Now let's see how our shared matcher library might improve a test which is using sinon.js to verify how our API client interacts with the underlying [`request`](https://github.com/request/request) module which we're using to make HTTP calls.
+
+Here's where we'd start today:
+```
+it('makes a call with the right path and query params', function () {
+  const spyRequestFn = sinon.stub().returns(fakeRequest());
+  const apiClient = createApiClient({request:spyRequestFn});
+
+  const theUserId = '4213';
+
+  return apiClient.getUser(theUserId)
+    .then(function () {
+      expect(spyRequestFn).to.have.been.called;
+
+      const requestParams = spyRequestFn.firstCall.args[0];
+
+      expect(requestParams).to.have.property('baseUrl').a('string');
+      expect(requestParams).to.have.property('uri', '/findUser');
+      expect(requestParams).to.have.property('qs');
+      expect(requestParams.qs).to.have.property('id',theUserId);
+});
+
+```
+
+First of all, we could start by expressing all those expectations against `requestParams` as a single matcher:
+
+```
+it('makes a call with the right path and query params', function () {
+  const spyRequestFn = sinon.stub().returns(fakeRequest());
+  const apiClient = createApiClient({request:spyRequestFn});
+
+  const theUserId = '4213';
+
+  return apiClient.getUser(theUserId)
+    .then(function () {
+      expect(spyRequestFn).to.have.been.called;
+
+      const requestParams = spyRequestFn.firstCall.args[0];
+
+      expect(requestParams).to.match(M.objectWith({
+        baseUrl: M.ofType('string'),
+        uri: '/findUser',
+        qs: M.objectWith({
+          id: theUserId
+        })
+      }));
+    });
+});
+
+```
+
+That's a bit cleaner - and again we'll get clearer error messages if those expectations aren't met. We can go further though. Because we're working with a general purpose library we can also plug it into sinon.js's own concept of matchers, resulting in a test like this:
+
+```
+it('makes a call with the right path and query params', function () {
+  const spyRequestFn = sinon.stub().returns(fakeRequest());
+  const apiClient = createApiClient({request:spyRequestFn});
+
+  const theUserId = '4213';
+
+  return apiClient.getUser(theUserId)
+    .then(function () {
+      expect(spyRequestFn).to.have.been.calledWithMatch(M.objectWith({
+        uri: '/findUser',
+        qs: M.objectWith({
+          id: theUserId
+        })
+      }));
+    });
+});
+
+```
+
+And we're only getting started here. Since testing the interactions against the `request` function is something a lot of things do, you can imagine building a higher-level abstraction over the matcher DSL we have here, working in the domain of HTTP requests (URIs, query params, hosts) rather than the generic domain of object matching.
