@@ -21,3 +21,7 @@
 <meta property="og:url" content="{{ canonical }}"/>
 <meta property="og:site_name" content="{{site.subtitle}}"/>
 <meta property="og:description" content="{{ description | strip_html | condense_spaces | truncate:150 }}"/>
+
+{% if page.meta_image %}
+<meta name="og:image" content="{{page.meta_image}}"/>
+{% endif %}

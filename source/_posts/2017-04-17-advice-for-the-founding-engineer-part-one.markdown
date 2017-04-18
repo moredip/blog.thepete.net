@@ -4,6 +4,7 @@ title: "Advice for the Founding Engineer, part 1"
 date: 2017-04-17 05:11
 description: "We introduce the first of three maxims to guide the decisions of a founding engineer: You'll Never Know Less Than You Know Right Now."
 comments: true
+meta_image: https://upload.wikimedia.org/wikipedia/commons/f/fb/Muir_and_Roosevelt_restored.jpg
 categories: 
 ---
 
