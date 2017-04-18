@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Advice for the Founding Engineer, part 1"
-date: 2017-03-16 05:11
+date: 2017-04-17 05:11
 comments: true
 categories: 
 ---
