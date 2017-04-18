@@ -2,6 +2,7 @@
 layout: post
 title: "Advice for the Founding Engineer, part 1"
 date: 2017-04-17 05:11
+description: "We introduce the first of three maxims to guide the decisions of a founding engineer: You'll Never Know Less Than You Know Right Now."
 comments: true
 categories: 
 ---
