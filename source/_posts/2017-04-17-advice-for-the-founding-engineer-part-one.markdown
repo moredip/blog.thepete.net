@@ -8,9 +8,9 @@ meta_image: https://upload.wikimedia.org/wikipedia/commons/f/fb/Muir_and_Rooseve
 categories: 
 ---
 
-As a founding engineer at a new startup you are tasked with getting an initial product out of the door ASAP while still supporting what comes after the MVP. Those two goals are somewhat in tension. You are regularly confronted with decisions where you must strike the right balance between the two. Basing decisions on a consistent set of guiding principles will help you to strike that balance consistently. 
+The founding engineer at a new startup carries a heavy weight upon their shoulders. Technical decisions made at this early stage resonate for a long time. Beginnings are such delicate times, as they say. Compounding this is an underlying tension inherent to every young enterprise - we must get an initial product out of the door ASAP but still support what comes *after* the MVP. Navigating this treacherous terrain is best achieved by consistent application of some guiding principles. 
 
-I've condensed my opinions on how to succeed as a founding engineer into 3 core maxims which will help guide your decision-making. In this series of posts I'll introduce each maxim and then elaborate with some more concrete rules of thumb that emerge from these maxims.
+Witnessing these early decisions - and how they eventually play out! - has led me to 3 core maxims which I believe will serve the founding engineer well. In this series of posts I'll introduce each maxim along with some more concrete guidance that emerges from these maxims.
 
 We'll start off with my first maxim - "You'll Never Know Less Than You Know Right Now". In later posts I'll cover the other two: "Optimize For Iteration" and "Boring Is Good". 
 
