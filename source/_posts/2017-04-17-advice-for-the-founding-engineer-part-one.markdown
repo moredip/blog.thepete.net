@@ -1,14 +1,14 @@
 ---
 layout: post
 title: "Advice for the Founding Engineer, part 1"
-date: 2017-04-17 05:11
+date: 2017-04-23 05:11
 description: "We introduce the first of three maxims to guide the decisions of a founding engineer: You'll Never Know Less Than You Know Right Now."
 comments: true
 meta_image: https://upload.wikimedia.org/wikipedia/commons/f/fb/Muir_and_Roosevelt_restored.jpg
 categories: 
 ---
 
-The founding engineer at a new startup carries a heavy weight upon their shoulders. Technical decisions made at this early stage resonate for a long time. Beginnings are such delicate times, as they say. Compounding this is an underlying tension inherent to every young enterprise - we must get an initial product out of the door ASAP but still support what comes *after* the MVP. Navigating this treacherous terrain is best achieved by consistent application of some guiding principles. 
+The founding engineer at a new startup carries a heavy weight upon their shoulders. Technical decisions made at this early stage resonate for a long time. Beginnings are such delicate times, as they say. Compounding this is an underlying tension inherent to every young enterprise - we must get an initial product out of the door ASAP but still support what comes *after* the MVP. Grounding your choices against a small set of guiding principles will help keep them sensible and coherent.
 
 Witnessing these early decisions - and how they eventually play out! - has led me to 3 core maxims which I believe will serve the founding engineer well. In this series of posts I'll introduce each maxim along with some more concrete guidance that emerges from these maxims.
 
@@ -33,14 +33,14 @@ Since removing technical uncertainty is a valuable outcome in and of itself, tak
 
 Consider doing "spikes" of throw-away work when exploring new technical terrain. Treat the work as a throw-away prototype - this allows you to go fast and maximize for learning. Once you're done exploring don't succumb to the [sunk-cost fallacy](https://www.logicallyfallacious.com/tools/lp/Bo/LogicalFallacies/173/Sunk-Cost-Fallacy) and attempt to turn your prototype into your product. Throw it away and re-build using what you learned from the prototype. What you build the second time around will be much more robust and you'll probably get it done in half the time thanks to the understanding you gained from the spike.
 
-### Build for now, keep an eye on what's coming
+### Build for now, keep an eye on what's coming.
 Engineers have [a strong desire to build generalized abstractions](https://xkcd.com/974/). But remember, you are in a deeply uncertain world. Embrace the fact that you'll never know less than you know right now. Resist the urge to build what you "know" you are going to need in 3 months time and it's "more efficient" to build it in one go now. 3 months is a very long time in startup land. 
 
 In building something that you don't need now because you "know" you'll need it in the future you start paying [various costs](https://martinfowler.com/bliki/Yagni.html) now on the basis of an uncertain return on investment in the future. Defer the cost by deferring the creation of a generalized solution. Solve for what you need now. By the time you actually *need* a generalized solution you'll understand the problem space a lot better, and will create a superior solution in less time.
 
 That said, it is important to have an awareness for where you think you're going. Let's say you're building out user notifications. You're starting with email today, but you "know" you'll need to support SMS and in-app notifications soon. You should **not** build the SMS and in-app notification capability until you actually need it. You should also not build a generic notifications system which initially only has one implementation for email - you will inevitably get the abstraction wrong. You should build just the email notification capability you need today, but do so with an understanding that you expect to eventually generalize. Create a focused solution but with design seams in place so that you can enhance it to support other channels once you get to SMS and in-app. Even when you believe you understand the seams of the abstraction you'll likely still need to revise your approach when you actually build the other channels, but hopefully you will have architectural boundaries in roughly the right places to make those small modifications relatively easy.
 
-### Design for 10x, consider 100x, don't support 1000x
+### Design for 10x, consider 100x, don't support 1000x.
 When deciding on a technical approach it's important to plan for growth, but you must keep in mind that there are very real trade-offs when you design for scale. An architecture which supports 1000 transactions a second costs more than one which supports 10 transactions a second. The same feature will take longer to develop and cost more to operate and maintain in a 1000 tps system than an 10 tps system. Prematurely scaling your architecture will slow down your ability to deliver features without delivering any benefit (until you get close to that scale).
 
 [Google's approach](http://static.googleusercontent.com/media/research.google.com/en//people/jeff/WSDM09-keynote.pdf) is to design for 10x your current scale, but expect to rewrite before you hit 100x. This doesn't mean you shouldn't think about the 100x scenario - you should consider it - but you should not expect to be able to predict what your 100x architecture will look. You'll never know less than you do now, remember. Your consideration should be in building a modular architecture where you can pull out the part that isn't scaling and replace it with a more scalable design without massive impact on the rest of your system. Re-writing systems is expensive, so try to modularize along sensible boundaries in order to contain the cost of the rewrite.
