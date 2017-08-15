@@ -1,12 +1,14 @@
 ---
 layout: post
 title: "Advice for the Founding Engineer, part 2"
-date: 2017-03-16 05:11
+date: 2017-08-14 05:11
+description: "We introduce the second of three maxims which can guide the decisions of a founding engineer: Optimize For Iteration."
 comments: true
+meta_image: https://upload.wikimedia.org/wikipedia/commons/7/7d/Homesteader_NE_1866.png
 categories: 
 ---
 
-Decisions made by engineers at the very beginning of a product can have repurcussions which extend far into the future. In this series of posts my advice on how to make the correct decisions as a founding engineer is condensed into three maxims. In the first post in the series I introduced the first maxim - "You'll Never Know Less Than You Know Right Now". In this post I'll cover maxim 2 - "Optimize For Iteration". In an upcoming post I'll talk about the final maxim - "Boring Is Good". 
+Decisions made by engineers at the very beginning of a product can have repurcussions which extend far into the future. In this series of posts my advice on how to make the correct decisions as a founding engineer is condensed into three maxims. In the [first post in this series](/blog/2017/04/23/advice-for-the-founding-engineer-part-one/) I introduced the first maxim - "You'll Never Know Less Than You Know Right Now". In this post I'll cover maxim 2 - "Optimize For Iteration". In an upcoming post I'll talk about the final maxim - "Boring Is Good". 
 
 ## Maxim 2: Optimize for iteration
 An early-stage startup needs to be able to experiment, learn and adjust. Over and over again. In this environment the most important property of your architecture and your engineering processes is how nimble they allow you to be. Note that nimble isn't necessarily the same as efficient. Nimble means we have great visibility into how our product is being used, and can adjust our product direction frequently without a lot of waste. Your startup is negotiating unclear terrain without much visibility into the future. 
@@ -27,10 +29,7 @@ One example: rather than building out all 4 screens of your mobile app and then 
 This philosophy doesn't just apply to mobile apps. Getting a "hello world" version of your web app out into a production environment - and building out the initial delivery pipeline to get it there - allows you to start optimizing your delivery capability, which again allows you to optimize how quickly you can iterate on an idea and course-correct as necessary. Your goal should be to get comfortable *as soon as possible* with constantly releasing very small incremental changes into a production environment.
 
 ### You need to measure in order to validate
-Getting changes into customer's hands is only the first half of iteration. You also need feedback on those changes. Spend time making your system *observable*. You need to understand how your system is behaving and how users are interacting with it in order to complete that feedback loop which drives iteration. At a bare minimum this means setting up user interaction analytics (for both web or mobile UIs), but it may also mean instrumenting your system for business-level metrics. Making your systems observable gives confidence to move "safely with speed". You have the courage to make changes to your system when you know you'll get rapid feedback on a mistake.
-
-### Modular disposability
-**TODO**
+Getting changes into customer's hands is only the first half of iteration. You also need feedback on those changes. Spend time making your system *observable*. You need to understand how your system is behaving and how users are interacting with it in order to complete that feedback loop which drives iteration. You should be able to observe your system at various levels, from technical error logging (including client-side errors!), through user interaction analytics (for both web or mobile UIs), and on up to business-level metrics. An observable system provides the confidence to "move safely with speed". You have the courage to make changes to your system when you know you'll get rapid feedback on the impact of that change.
 
 ## Stay tuned for more
 
