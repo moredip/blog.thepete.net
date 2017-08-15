@@ -8,10 +8,10 @@ meta_image: https://upload.wikimedia.org/wikipedia/commons/7/7d/Homesteader_NE_1
 categories: 
 ---
 
-Decisions made by engineers at the very beginning of a product can have repurcussions which extend far into the future. In this series of posts my advice on how to make the correct decisions as a founding engineer is condensed into three maxims. In the [first post in this series](/blog/2017/04/23/advice-for-the-founding-engineer-part-one/) I introduced the first maxim - "You'll Never Know Less Than You Know Right Now". In this post I'll cover maxim 2 - "Optimize For Iteration". In an upcoming post I'll talk about the final maxim - "Boring Is Good". 
+Engineering decisions made at the very early stages of a product's life can have repercussions which extend far into the future. In this series of posts my advice on how to make the correct decisions as a founding engineer is condensed into three maxims. In the [first post in this series](/blog/2017/04/23/advice-for-the-founding-engineer-part-one/) I introduced the first maxim - "You'll Never Know Less Than You Know Right Now". In this post I'll cover maxim 2 - "Optimize For Iteration". In an upcoming post I'll talk about the final maxim - "Boring Is Good". 
 
 ## Maxim 2: Optimize for iteration
-An early-stage startup needs to be able to experiment, learn and adjust. Over and over again. In this environment the most important property of your architecture and your engineering processes is how nimble they allow you to be. Note that nimble isn't necessarily the same as efficient. Nimble means we have great visibility into how our product is being used, and can adjust our product direction frequently without a lot of waste. Your startup is negotiating unclear terrain without much visibility into the future. 
+An early-stage startup needs to be able to experiment, learn and adjust. Over and over again. In this environment the most important property of your architecture and your engineering processes is how nimble they allow you to be. Note that nimble isn't necessarily the same as efficient. Nimble means we have great visibility into how our product is being used and can adjust our product direction frequently without a lot of waste. Your startup is negotiating unclear terrain without much visibility into the future. 
 
 {% img /images/post_images/rally-sepia.jpg %}
 
