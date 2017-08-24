@@ -7,25 +7,23 @@ sharing: false
 footer: false
 ---
 
-I am an independent software consultant based in the San Francisco Bay Area. 
+I am an independent software delivery consultant based in the San Francisco Bay Area. Most of my work centers around supporting and advising startup engineering teams.
 
-Most of my work centers around supporting and advising startup engineering teams.
+I enjoy sharing my opinion via [conference talks, podcasts and writing](/articles-and-talks), often with a focus on agile engineering practices. 
 
-I enjoy sharing my opinion via [conference talks and writing](/articles-and-talks), often with a focus on agile engineering practices. 
+## How I can help
 
-## How I work
-
-I often engage with engineering organizations who are going through some sort of inflection point or experiencing growing pains.
+Most of my work is with engineering organizations who are going through some sort of inflection point or experiencing growing pains.
 
 For startups that are just getting off the ground I provide support in hiring an initial engineering team, laying out engineering practices, and defining an architectural approach for the initial MVP.
 
 For startups that have found product/market fit I consult on how to adjust engineering practices and architecture in a post-MVP world where the software being built (and decisions being made!) will likely persist for a lot longer.
 
-I love working with engineering organizations that are starting to move past a single team and/or a single codebase. This is a key inflection point for any engineering org. What has worked well in the previous reality will likely not work well in the future. I provide guidance on how to adjust engineering practices, SDLC and architecture.
+I love working with engineering organizations that are starting to move past a single team and/or a single codebase. This is a key inflection point for any engineering org. Folks often discover that approaches that have been worked well up to this point no long seem to work at this next level of scale. I provide guidance on how to adjust engineering practices, SDLC and architecture to enable your teams and software to scale.
 
-I also provide training and mentorship for teams getting started with new technologies or engineering techniques, with a focus on agile engineering practices - things like test automation and continuous delivery.
+I also provide training and mentorship for teams getting started with new technologies or engineering techniques. This support often has a focus on agile engineering practices - things like test automation and continuous delivery.
 
-## My Background
+## My background
 
 I have been building software and leading teams for about 20 years, working in a wide range of tech stacks and industry verticals. I've worked at startups where I was the first engineer and advised engineering leadership at Fortune 500 companies. 
 
