@@ -9,9 +9,13 @@ footer: false
 
 I am an independent software consultant based in the San Francisco Bay Area. 
 
-## My Focus
+Most of my work centers around supporting and advising startup engineering teams.
 
-Most of my work centers around supporting and advising startup engineering teams that are going through some sort of inflection point. 
+I enjoy sharing my opinion via [conference talks and writing](/articles-and-talks), often with a focus on agile engineering practices. 
+
+## How I work
+
+I often engage with engineering organizations who are going through some sort of inflection point or experiencing growing pains.
 
 For startups that are just getting off the ground I provide support in hiring an initial engineering team, laying out engineering practices, and defining an architectural approach for the initial MVP.
 
