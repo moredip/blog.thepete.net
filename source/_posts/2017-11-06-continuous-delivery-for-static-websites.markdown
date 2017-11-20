@@ -6,7 +6,7 @@ comments: true
 categories: 
 ---
 
-In this article I’ll show that the typical approach for deploying sophisticated static sites is not sufficient, and explain how we can apply the principles of [Continuous Delivery](https://continuousdelivery.com/) to improve the situation. We’ll then walk through a concrete example, building a fully functional continuous delivery pipeline for a single page React application.
+In this article I’ll show that the typical approach for deploying sophisticated static sites is not sufficient, and explain how we can apply the principles of [Continuous Delivery](https://continuousdelivery.com/) to improve the situation. We’ll then walk through a worked example, building a fully functional continuous delivery pipeline for a single page React application.
 
 ## The rise of the static site
 
@@ -86,7 +86,7 @@ With our scripting administrivia out of the way, the next line in our script run
 
 This script encapsulates all that's necessary to run our automated tests. Next we need to configure CodeShip to run it as a build step. We configure CodeShip's build steps by placing a `codeship-steps.yml` file in the root of our code repo:
 
-``` yaml codeship-steps.yml
+``` yml codeship-steps.yml
 - name: test
   service: workshop
   command: sh ./codeship/steps/test.sh
@@ -94,7 +94,7 @@ This script encapsulates all that's necessary to run our automated tests. Next w
 
 This file defines a build step called `test` which CodeShip will automatically run whenever it sees a new code commit land. That build step is configured to execute the `test.sh` script we just created.
 
-CodeShip runs every build step within a Docker container, which it refers to as *services*. We've specified that our `test` build step should run within the `workshop` service, but haven't yet told CodeShip what that service looks like. We do that via a separate `codeship-services.yml` configuration file, also placed in the root of our code repo:
+CodeShip runs every build step within a Docker container, which it refers to as a *service*. We've specified that our `test` build step should run within the `workshop` service, but haven't yet told CodeShip what that service looks like. We do that via a separate `codeship-services.yml` configuration file, also placed in the root of our code repo:
 
 ``` yaml codeship-services.yml
 workshop:
@@ -332,5 +332,5 @@ We've created a basic CD pipeline for nxtbrt.com in this post. There are plenty 
 One more advanced technique which I'd like to cover in a future post is using your CD pipeline to dynamically spin up ad-hoc environments for use in reviewing a change before it is merged into master. Heroku provides this capability via their [Review Apps](https://devcenter.heroku.com/articles/github-integration-review-apps) feature, but it's also quite possible to using infrastructure automation to hand-roll something similar. I call these PReview environments since they're often used for PR review before the PR is merged.
 
 # I can help your team
-I consult with engineering teams to help them build and enhance this type of Continous Delivery capability. If you’re interested in how I can help your team, please don’t hesitate to [get in touch](mailto://workwith@thepete.net).
+I consult with engineering teams to help them build and enhance this type of Continous Delivery capability. If you’re interested in how I can help your team, please don’t hesitate to [get in touch](mailto:workwith@thepete.net).
 
