@@ -80,7 +80,7 @@ yarn install
 yarn test -- --coverage
 ```
 
-Our script starts with a [shebang](https://bash.cyberciti.biz/guide/Shebang) which indicates that this script should be run using the `sh` interpreter. We use `set -e` to ensure that any individual failure within the script will cause th entire script to fail. We use `set -u` to ensure that we fail fast if our script contains references to undeclared variables. See [this awesome blog post](http://redsymbol.net/articles/unofficial-bash-strict-mode/) for more details on these flags, along with additional tricks for creating safer shell scripts.
+Our script starts with a [shebang](https://bash.cyberciti.biz/guide/Shebang) which indicates that this script should be run using the `sh` interpreter. We use `set -e` to ensure that any individual failure within the script will cause the entire script to fail. We use `set -u` to ensure that we fail fast if our script contains references to undeclared variables. See [this awesome blog post](http://redsymbol.net/articles/unofficial-bash-strict-mode/) for more details on these flags, along with additional tricks for creating safer shell scripts.
 
 With our scripting administrivia out of the way, the next line in our script runs `yarn install` to install our application's dependencies. Then we run `yarn test` to actually execute our automated tests, using a `--coverage` flag to also capture code coverage information.
 
