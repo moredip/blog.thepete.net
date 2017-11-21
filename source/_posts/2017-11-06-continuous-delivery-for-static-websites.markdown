@@ -3,8 +3,8 @@ layout: post
 title: "Continuous Delivery for Static Sites"
 date: 2017-11-06 13:20
 comments: true
-description: "Applying straightforward automation techniques to static site change management. Remove the human processes so you can move fast and not break things."
-meta_image: "/images/post_images/cd_static_sites/meta.png"
+description: "Applying straightforward Continuous Delivery techniques to static sites. Remove the human processes so you can move fast and not break things."
+meta_image: "http://blog.thepete.net/images/post_images/cd_static_sites/meta.jpg"
 categories: 
 ---
 
